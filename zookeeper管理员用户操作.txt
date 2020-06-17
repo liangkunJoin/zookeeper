@@ -1,0 +1,5 @@
+超级管理员的用户名为super，密码自定义比如：admin
+1. 首先调用DigestAuthenticationProvider.generateDigest("super:admin")获取签名，比如结果为：super:xQJmxLMiHGwaqBvst5y6rkB6HQs=
+2. 在启动Zookeeper服务端时加入-Dzookeeper.DigestAuthenticationProvider.superDigest=super:xQJmxLMiHGwaqBvst5y6rkB6HQs=
+3. 启动zookeeper并使用客户端进行连接
+4. 如果遇到没有操作权限的节点，这时可以addauth digest super:admin来开启管理员，即有所有权限
