@@ -88,8 +88,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * outstandingRequests, so that it can take into account transactions that are
  * in the queue to be applied when generating a transaction.
  */
-public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
-        RequestProcessor {
+public class PrepRequestProcessor extends ZooKeeperCriticalThread implements RequestProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(PrepRequestProcessor.class);
 
     static boolean skipACL;
@@ -112,10 +111,8 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
 
     ZooKeeperServer zks;
 
-    public PrepRequestProcessor(ZooKeeperServer zks,
-            RequestProcessor nextProcessor) {
-        super("ProcessThread(sid:" + zks.getServerId() + " cport:"
-                + zks.getClientPort() + "):", zks.getZooKeeperServerListener());
+    public PrepRequestProcessor(ZooKeeperServer zks, RequestProcessor nextProcessor) {
+        super("ProcessThread(sid:" + zks.getServerId() + " cport:" + zks.getClientPort() + "):", zks.getZooKeeperServerListener());
         this.nextProcessor = nextProcessor;
         this.zks = zks;
     }
@@ -166,8 +163,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                     synchronized(n) {
                         children = n.getChildren();
                     }
-                    lastChange = new ChangeRecord(-1, path, n.stat, children.size(),
-                            zks.getZKDatabase().aclForNode(n));
+                    lastChange = new ChangeRecord(-1, path, n.stat, children.size(), zks.getZKDatabase().aclForNode(n));
                 }
             }
         }
@@ -289,8 +285,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
      * @param perm: the permission that the client is requesting
      * @param ids:  the credentials supplied by the client
      */
-    static void checkACL(ZooKeeperServer zks, List<ACL> acl, int perm,
-            List<Id> ids) throws KeeperException.NoAuthException {
+    static void checkACL(ZooKeeperServer zks, List<ACL> acl, int perm, List<Id> ids) throws KeeperException.NoAuthException {
         if (skipACL) {
             return;
         }
@@ -354,12 +349,9 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
      * @param request
      * @param record
      */
-    protected void pRequest2Txn(int type, long zxid, Request request,
-                                Record record, boolean deserialize)
-        throws KeeperException, IOException, RequestProcessorException
-    {
-        request.setHdr(new TxnHeader(request.sessionId, request.cxid, zxid,
-                Time.currentWallTime(), type));
+    protected void pRequest2Txn(int type, long zxid, Request request, Record record, boolean deserialize) throws KeeperException, IOException {
+
+        request.setHdr(new TxnHeader(request.sessionId, request.cxid, zxid, Time.currentWallTime(), type));
 
         switch (type) {
             case OpCode.create:
@@ -651,6 +643,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             data = createRequest.getData();
             ttl = -1;
         }
+
         CreateMode createMode = CreateMode.fromFlag(flags);
         validateCreateRequest(path, createMode, request, ttl);
         String parentPath = validatePathForCreate(path, request.sessionId);
@@ -659,6 +652,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         ChangeRecord parentRecord = getRecordForPath(parentPath);
 
         checkACL(zks, parentRecord.acl, ZooDefs.Perms.CREATE, request.authInfo);
+
         int parentCVersion = parentRecord.stat.getCversion();
         if (createMode.isSequential()) {
             path = path + String.format(Locale.ENGLISH, "%010d", parentCVersion);
@@ -681,8 +675,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
         } else if (type == OpCode.createTTL) {
             request.setTxn(new CreateTTLTxn(path, data, listACL, newCversion, ttl));
         } else {
-            request.setTxn(new CreateTxn(path, data, listACL, createMode.isEphemeral(),
-                    newCversion));
+            request.setTxn(new CreateTxn(path, data, listACL, createMode.isEphemeral(), newCversion));
         }
         StatPersisted s = new StatPersisted();
         if (createMode.isEphemeral()) {
@@ -812,8 +805,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                             txn = new ErrorTxn(e.code().intValue());
 
                             if (e.code().intValue() > Code.APIERROR.intValue()) {
-                                LOG.info("Got user-level KeeperException when processing {} aborting" +
-                                        " remaining multi ops. Error Path:{} Error:{}",
+                                LOG.info("Got user-level KeeperException when processing {} aborting remaining multi ops. Error Path:{} Error:{}",
                                         request.toString(), e.getPath(), e.getMessage());
                             }
 
@@ -835,8 +827,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
                     txns.add(new Txn(type, bb.array()));
                 }
 
-                request.setHdr(new TxnHeader(request.sessionId, request.cxid, zxid,
-                        Time.currentWallTime(), request.type));
+                request.setHdr(new TxnHeader(request.sessionId, request.cxid, zxid, Time.currentWallTime(), request.type));
                 request.setTxn(new MultiTxn(txns));
 
                 break;
@@ -845,8 +836,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             case OpCode.createSession:
             case OpCode.closeSession:
                 if (!request.isLocalSession()) {
-                    pRequest2Txn(request.type, zks.getNextZxid(), request,
-                                 null, true);
+                    pRequest2Txn(request.type, zks.getNextZxid(), request, null, true);
                 }
                 break;
 
@@ -861,8 +851,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             case OpCode.setWatches:
             case OpCode.checkWatches:
             case OpCode.removeWatches:
-                zks.sessionTracker.checkSession(request.sessionId,
-                        request.getOwner());
+                zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 break;
             default:
                 LOG.warn("unknown type " + request.type);
@@ -875,8 +864,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             }
 
             if (e.code().intValue() > Code.APIERROR.intValue()) {
-                LOG.info("Got user-level KeeperException when processing {} Error Path:{} Error:{}",
-                        request.toString(), e.getPath(), e.getMessage());
+                LOG.info("Got user-level KeeperException when processing {} Error Path:{} Error:{}", request.toString(), e.getPath(), e.getMessage());
             }
             request.setException(e);
         } catch (Exception e) {
@@ -932,11 +920,9 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
             if (request.getException() != null) {
                 throw request.getException();
             }
-            zks.sessionTracker.checkGlobalSession(request.sessionId,
-                    request.getOwner());
+            zks.sessionTracker.checkGlobalSession(request.sessionId, request.getOwner());
         } else {
-            zks.sessionTracker.checkSession(request.sessionId,
-                    request.getOwner());
+            zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
         }
     }
 
@@ -950,8 +936,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements
      * @return verified and expanded ACLs
      * @throws KeeperException.InvalidACLException
      */
-    private List<ACL> fixupACL(String path, List<Id> authInfo, List<ACL> acls)
-        throws KeeperException.InvalidACLException {
+    private List<ACL> fixupACL(String path, List<Id> authInfo, List<ACL> acls) throws KeeperException.InvalidACLException {
         // check for well formed ACLs
         // This resolves https://issues.apache.org/jira/browse/ZOOKEEPER-1877
         List<ACL> uniqacls = removeDuplicates(acls);

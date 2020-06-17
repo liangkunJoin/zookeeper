@@ -328,8 +328,8 @@ public class ZooKeeperMain {
             // only use jline if it's in the classpath
             try {
                 Class<?> consoleC = Class.forName("jline.console.ConsoleReader");
-                Class<?> completorC =
-                    Class.forName("org.apache.zookeeper.JLineZNodeCompleter");
+
+                Class<?> completorC = Class.forName("org.apache.zookeeper.JLineZNodeCompleter");
 
                 System.out.println("JLine support is enabled");
 

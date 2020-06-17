@@ -44,12 +44,12 @@ import org.slf4j.LoggerFactory;
  *             be null. This change the semantic of txnlog on the observer
  *             since it only contains committed txns.
  */
-public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
-        RequestProcessor {
+public class SyncRequestProcessor extends ZooKeeperCriticalThread implements RequestProcessor {
+
     private static final Logger LOG = LoggerFactory.getLogger(SyncRequestProcessor.class);
+
     private final ZooKeeperServer zks;
-    private final LinkedBlockingQueue<Request> queuedRequests =
-        new LinkedBlockingQueue<Request>();
+    private final LinkedBlockingQueue<Request> queuedRequests = new LinkedBlockingQueue<Request>();
     private final RequestProcessor nextProcessor;
 
     private Thread snapInProcess = null;
@@ -69,10 +69,8 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
 
     private final Request requestOfDeath = Request.requestOfDeath;
 
-    public SyncRequestProcessor(ZooKeeperServer zks,
-            RequestProcessor nextProcessor) {
-        super("SyncThread:" + zks.getServerId(), zks
-                .getZooKeeperServerListener());
+    public SyncRequestProcessor(ZooKeeperServer zks, RequestProcessor nextProcessor) {
+        super("SyncThread:" + zks.getServerId(), zks.getZooKeeperServerListener());
         this.zks = zks;
         this.nextProcessor = nextProcessor;
         running = true;
@@ -105,6 +103,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
             int randRoll = r.nextInt(snapCount/2);
             while (true) {
                 Request si = null;
+
                 if (toFlush.isEmpty()) {
                     si = queuedRequests.take();
                 } else {
@@ -114,6 +113,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
                         continue;
                     }
                 }
+
                 if (si == requestOfDeath) {
                     break;
                 }
@@ -169,9 +169,7 @@ public class SyncRequestProcessor extends ZooKeeperCriticalThread implements
         LOG.info("SyncRequestProcessor exited!");
     }
 
-    private void flush(LinkedList<Request> toFlush)
-        throws IOException, RequestProcessorException
-    {
+    private void flush(LinkedList<Request> toFlush) throws IOException, RequestProcessorException {
         if (toFlush.isEmpty())
             return;
 
