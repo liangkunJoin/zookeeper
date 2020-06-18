@@ -1155,8 +1155,7 @@ public class Leader {
      * @return last proposed zxid
      * @throws InterruptedException 
      */
-    synchronized public long startForwarding(LearnerHandler handler,
-            long lastSeenZxid) {
+    synchronized public long startForwarding(LearnerHandler handler, long lastSeenZxid) {
         // Queue up any outstanding requests enabling the receipt of
         // new requests
         if (lastProposed > lastSeenZxid) {
