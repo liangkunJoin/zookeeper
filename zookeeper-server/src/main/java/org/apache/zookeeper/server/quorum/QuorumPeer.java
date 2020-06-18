@@ -140,6 +140,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     }
 
     public static class QuorumServer {
+
         public InetSocketAddress addr = null;
 
         public InetSocketAddress electionAddr = null;
@@ -854,9 +855,8 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             File dataLogDir, int electionType,
             long myid, int tickTime, int initLimit, int syncLimit,
             ServerCnxnFactory cnxnFactory) throws IOException {
-        this(quorumPeers, dataDir, dataLogDir, electionType, myid, tickTime,
-                initLimit, syncLimit, false, cnxnFactory,
-                new QuorumMaj(quorumPeers));
+        this(quorumPeers, dataDir, dataLogDir, electionType, myid, tickTime, initLimit,
+                syncLimit, false, cnxnFactory, new QuorumMaj(quorumPeers));
     }
 
     public QuorumPeer(Map<Long, QuorumServer> quorumPeers, File dataDir,
@@ -934,9 +934,8 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             	// this should only happen once when moving to a
             	// new code version
             	currentEpoch = epochOfZxid;
-            	LOG.info(CURRENT_EPOCH_FILENAME
-            	        + " not found! Creating with a reasonable default of {}. This should only happen when you are upgrading your installation",
-            	        currentEpoch);
+            	LOG.info(CURRENT_EPOCH_FILENAME + " not found! " +
+                        "Creating with a reasonable default of {}. This should only happen when you are upgrading your installation", currentEpoch);
             	writeLongToFile(CURRENT_EPOCH_FILENAME, currentEpoch);
             }
             if (epochOfZxid > currentEpoch) {
@@ -949,13 +948,13 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             	// this should only happen once when moving to a
             	// new code version
             	acceptedEpoch = epochOfZxid;
-            	LOG.info(ACCEPTED_EPOCH_FILENAME
-            	        + " not found! Creating with a reasonable default of {}. This should only happen when you are upgrading your installation",
-            	        acceptedEpoch);
+            	LOG.info(ACCEPTED_EPOCH_FILENAME + " not found!" +
+                                " Creating with a reasonable default of {}. This should only happen when you are upgrading your installation", acceptedEpoch);
             	writeLongToFile(ACCEPTED_EPOCH_FILENAME, acceptedEpoch);
             }
             if (acceptedEpoch < currentEpoch) {
-                throw new IOException("The accepted epoch, " + ZxidUtils.zxidToString(acceptedEpoch) + " is less than the current epoch, " + ZxidUtils.zxidToString(currentEpoch));
+                throw new IOException("The accepted epoch, "
+                        + ZxidUtils.zxidToString(acceptedEpoch) + " is less than the current epoch, " + ZxidUtils.zxidToString(currentEpoch));
             }
         } catch(IOException ie) {
             LOG.error("Unable to load database on disk", ie);
@@ -1016,14 +1015,10 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
      * This constructor is only used by the existing unit test code.
      * It defaults to FileLogProvider persistence provider.
      */
-    public QuorumPeer(Map<Long,QuorumServer> quorumPeers, File snapDir,
-            File logDir, int clientPort, int electionAlg,
-            long myid, int tickTime, int initLimit, int syncLimit)
-        throws IOException
-    {
+    public QuorumPeer(Map<Long,QuorumServer> quorumPeers, File snapDir, File logDir, int clientPort, int electionAlg,
+                      long myid, int tickTime, int initLimit, int syncLimit) throws IOException {
         this(quorumPeers, snapDir, logDir, electionAlg, myid, tickTime, initLimit, syncLimit, false,
-                ServerCnxnFactory.createFactory(getClientAddress(quorumPeers, myid, clientPort), -1),
-                new QuorumMaj(quorumPeers));
+                ServerCnxnFactory.createFactory(getClientAddress(quorumPeers, myid, clientPort), -1), new QuorumMaj(quorumPeers));
     }
 
     /**
@@ -1042,9 +1037,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                 quorumConfig);
     }
 
-    private static InetSocketAddress getClientAddress(Map<Long, QuorumServer> quorumPeers, long myid, int clientPort)
-            throws IOException {
+    private static InetSocketAddress getClientAddress(Map<Long, QuorumServer> quorumPeers, long myid, int clientPort) throws IOException {
         QuorumServer quorumServer = quorumPeers.get(myid);
+
         if (null == quorumServer) {
             throw new IOException("No QuorumServer correspoding to myid " + myid);
         }

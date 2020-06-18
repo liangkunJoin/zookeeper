@@ -21,21 +21,22 @@ package org.apache.zookeeper.server.quorum;
 
 import org.apache.jute.*;
 import org.apache.yetus.audience.InterfaceAudience;
+
 @InterfaceAudience.Public
 public class LearnerInfo implements Record {
   private long serverid;
   private int protocolVersion;
   private long configVersion;
+
   public LearnerInfo() {
   }
-  public LearnerInfo(
-        long serverid,
-        int protocolVersion,
-        long configVersion) {
+
+  public LearnerInfo(long serverid, int protocolVersion, long configVersion) {
     this.serverid=serverid;
     this.protocolVersion=protocolVersion;
     this.configVersion=configVersion;
   }
+
   public long getServerid() {
     return serverid;
   }
@@ -54,6 +55,7 @@ public class LearnerInfo implements Record {
   public void setConfigVersion(long m_) {
     configVersion=m_;
   }
+
   public void serialize(OutputArchive a_, String tag) throws java.io.IOException {
     a_.startRecord(this,tag);
     a_.writeLong(serverid,"serverid");
@@ -61,6 +63,7 @@ public class LearnerInfo implements Record {
     a_.writeLong(configVersion,"configVersion");
     a_.endRecord(this,tag);
   }
+
   public void deserialize(InputArchive a_, String tag) throws java.io.IOException {
     a_.startRecord(tag);
     serverid=a_.readLong("serverid");
@@ -68,16 +71,15 @@ public class LearnerInfo implements Record {
     configVersion=a_.readLong("configVersion");
     a_.endRecord(tag);
 }
+
   public String toString() {
     try {
-      java.io.ByteArrayOutputStream s =
-        new java.io.ByteArrayOutputStream();
-      CsvOutputArchive a_ = 
-        new CsvOutputArchive(s);
+      java.io.ByteArrayOutputStream s = new java.io.ByteArrayOutputStream();
+      CsvOutputArchive a_ = new CsvOutputArchive(s);
       a_.startRecord(this,"");
-    a_.writeLong(serverid,"serverid");
-    a_.writeInt(protocolVersion,"protocolVersion");
-    a_.writeLong(configVersion,"configVersion");
+      a_.writeLong(serverid,"serverid");
+      a_.writeInt(protocolVersion,"protocolVersion");
+      a_.writeLong(configVersion,"configVersion");
       a_.endRecord(this,"");
       return new String(s.toByteArray(), "UTF-8");
     } catch (Throwable ex) {
@@ -85,14 +87,20 @@ public class LearnerInfo implements Record {
     }
     return "ERROR";
   }
+
+
   public void write(java.io.DataOutput out) throws java.io.IOException {
     BinaryOutputArchive archive = new BinaryOutputArchive(out);
     serialize(archive, "");
   }
+
+
   public void readFields(java.io.DataInput in) throws java.io.IOException {
     BinaryInputArchive archive = new BinaryInputArchive(in);
     deserialize(archive, "");
   }
+
+
   public int compareTo (Object peer_) throws ClassCastException {
     if (!(peer_ instanceof LearnerInfo)) {
       throw new ClassCastException("Comparing different types of records.");
@@ -107,6 +115,8 @@ public class LearnerInfo implements Record {
     if (ret != 0) return ret;
      return ret;
   }
+
+
   public boolean equals(Object peer_) {
     if (!(peer_ instanceof LearnerInfo)) {
       return false;
@@ -124,6 +134,8 @@ public class LearnerInfo implements Record {
     if (!ret) return ret;
      return ret;
   }
+
+
   public int hashCode() {
     int result = 17;
     int ret;
@@ -135,6 +147,8 @@ public class LearnerInfo implements Record {
     result = 37*result + ret;
     return result;
   }
+
+
   public static String signature() {
     return "LLearnerInfo(lil)";
   }

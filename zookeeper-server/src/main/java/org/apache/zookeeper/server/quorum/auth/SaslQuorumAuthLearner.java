@@ -77,22 +77,16 @@ public class SaslQuorumAuthLearner implements QuorumAuthLearner {
     @Override
     public void authenticate(Socket sock, String hostName) throws IOException {
         if (!quorumRequireSasl) { // let it through, we don't require auth
-            LOG.info("Skipping SASL authentication as {}={}",
-                    QuorumAuth.QUORUM_LEARNER_SASL_AUTH_REQUIRED,
-                    quorumRequireSasl);
+            LOG.info("Skipping SASL authentication as {}={}", QuorumAuth.QUORUM_LEARNER_SASL_AUTH_REQUIRED, quorumRequireSasl);
             return;
         }
         SaslClient sc = null;
-        String principalConfig = SecurityUtils
-                .getServerPrincipal(quorumServicePrincipal, hostName);
+        String principalConfig = SecurityUtils.getServerPrincipal(quorumServicePrincipal, hostName);
         try {
-            DataOutputStream dout = new DataOutputStream(
-                    sock.getOutputStream());
+            DataOutputStream dout = new DataOutputStream(sock.getOutputStream());
             DataInputStream din = new DataInputStream(sock.getInputStream());
             byte[] responseToken = new byte[0];
-            sc = SecurityUtils.createSaslClient(learnerLogin.getSubject(),
-                    principalConfig,
-                    QuorumAuth.QUORUM_SERVER_PROTOCOL_NAME,
+            sc = SecurityUtils.createSaslClient(learnerLogin.getSubject(), principalConfig, QuorumAuth.QUORUM_SERVER_PROTOCOL_NAME,
                     QuorumAuth.QUORUM_SERVER_SASL_DIGEST, LOG, "QuorumLearner");
 
             if (sc.hasInitialResponse()) {
@@ -100,35 +94,27 @@ public class SaslQuorumAuthLearner implements QuorumAuthLearner {
             }
             send(dout, responseToken);
             QuorumAuthPacket authPacket = receive(din);
-            QuorumAuth.Status qpStatus = QuorumAuth.Status
-                    .getStatus(authPacket.getStatus());
+            QuorumAuth.Status qpStatus = QuorumAuth.Status.getStatus(authPacket.getStatus());
             while (!sc.isComplete()) {
                 switch (qpStatus) {
                 case SUCCESS:
-                    responseToken = createSaslToken(authPacket.getToken(), sc,
-                            learnerLogin);
+                    responseToken = createSaslToken(authPacket.getToken(), sc, learnerLogin);
                     // we're done; don't expect to send another BIND
                     if (responseToken != null) {
                         throw new SaslException("Protocol error: attempting to send response after completion");
                     }
                     break;
                 case IN_PROGRESS:
-                    responseToken = createSaslToken(authPacket.getToken(), sc,
-                            learnerLogin);
+                    responseToken = createSaslToken(authPacket.getToken(), sc, learnerLogin);
                     send(dout, responseToken);
                     authPacket = receive(din);
-                    qpStatus = QuorumAuth.Status
-                            .getStatus(authPacket.getStatus());
+                    qpStatus = QuorumAuth.Status.getStatus(authPacket.getStatus());
                     break;
                 case ERROR:
-                    throw new SaslException(
-                            "Authentication failed against server addr: "
-                                    + sock.getRemoteSocketAddress());
+                    throw new SaslException("Authentication failed against server addr: " + sock.getRemoteSocketAddress());
                 default:
                     LOG.warn("Unknown status:{}!", qpStatus);
-                    throw new SaslException(
-                            "Authentication failed against server addr: "
-                                    + sock.getRemoteSocketAddress());
+                    throw new SaslException("Authentication failed against server addr: " + sock.getRemoteSocketAddress());
                 }
             }
 
@@ -165,14 +151,11 @@ public class SaslQuorumAuthLearner implements QuorumAuthLearner {
         return authPacket;
     }
 
-    private void send(DataOutputStream dout, byte[] response)
-            throws IOException {
+    private void send(DataOutputStream dout, byte[] response) throws IOException {
         QuorumAuthPacket authPacket;
         BufferedOutputStream bufferedOutput = new BufferedOutputStream(dout);
-        BinaryOutputArchive boa = BinaryOutputArchive
-                .getArchive(bufferedOutput);
-        authPacket = QuorumAuth.createPacket(
-                QuorumAuth.Status.IN_PROGRESS, response);
+        BinaryOutputArchive boa = BinaryOutputArchive.getArchive(bufferedOutput);
+        authPacket = QuorumAuth.createPacket(QuorumAuth.Status.IN_PROGRESS, response);
         boa.writeRecord(authPacket, QuorumAuth.QUORUM_AUTH_MESSAGE_TAG);
         bufferedOutput.flush();
     }

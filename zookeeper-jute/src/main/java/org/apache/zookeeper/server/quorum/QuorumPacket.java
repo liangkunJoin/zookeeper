@@ -21,24 +21,26 @@ package org.apache.zookeeper.server.quorum;
 
 import org.apache.jute.*;
 import org.apache.yetus.audience.InterfaceAudience;
+
+
 @InterfaceAudience.Public
 public class QuorumPacket implements Record {
+
   private int type;
   private long zxid;
   private byte[] data;
+
   private java.util.List<org.apache.zookeeper.data.Id> authinfo;
-  public QuorumPacket() {
-  }
-  public QuorumPacket(
-        int type,
-        long zxid,
-        byte[] data,
-        java.util.List<org.apache.zookeeper.data.Id> authinfo) {
+
+  public QuorumPacket() { }
+
+  public QuorumPacket(int type, long zxid, byte[] data, java.util.List<org.apache.zookeeper.data.Id> authinfo) {
     this.type=type;
     this.zxid=zxid;
     this.data=data;
     this.authinfo=authinfo;
   }
+
   public int getType() {
     return type;
   }
@@ -63,80 +65,101 @@ public class QuorumPacket implements Record {
   public void setAuthinfo(java.util.List<org.apache.zookeeper.data.Id> m_) {
     authinfo=m_;
   }
+
+
   public void serialize(OutputArchive a_, String tag) throws java.io.IOException {
     a_.startRecord(this,tag);
+
     a_.writeInt(type,"type");
     a_.writeLong(zxid,"zxid");
     a_.writeBuffer(data,"data");
+
     {
       a_.startVector(authinfo,"authinfo");
-      if (authinfo!= null) {          int len1 = authinfo.size();
+      if (authinfo!= null) {
+          int len1 = authinfo.size();
           for(int vidx1 = 0; vidx1<len1; vidx1++) {
             org.apache.zookeeper.data.Id e1 = (org.apache.zookeeper.data.Id) authinfo.get(vidx1);
-    a_.writeRecord(e1,"e1");
+            a_.writeRecord(e1,"e1");
           }
       }
       a_.endVector(authinfo,"authinfo");
     }
     a_.endRecord(this,tag);
   }
+
+
   public void deserialize(InputArchive a_, String tag) throws java.io.IOException {
+
     a_.startRecord(tag);
+
     type=a_.readInt("type");
     zxid=a_.readLong("zxid");
     data=a_.readBuffer("data");
+
     {
       Index vidx1 = a_.startVector("authinfo");
-      if (vidx1!= null) {          authinfo=new java.util.ArrayList<org.apache.zookeeper.data.Id>();
-          for (; !vidx1.done(); vidx1.incr()) {
-    org.apache.zookeeper.data.Id e1;
-    e1= new org.apache.zookeeper.data.Id();
-    a_.readRecord(e1,"e1");
-            authinfo.add(e1);
-          }
+      if (vidx1!= null) {
+        authinfo=new java.util.ArrayList<org.apache.zookeeper.data.Id>();
+
+        for (; !vidx1.done(); vidx1.incr()) {
+          org.apache.zookeeper.data.Id e1;
+          e1= new org.apache.zookeeper.data.Id();
+          a_.readRecord(e1,"e1");
+          authinfo.add(e1);
+        }
       }
-    a_.endVector("authinfo");
+
+      a_.endVector("authinfo");
     }
+
     a_.endRecord(tag);
 }
+
+
   public String toString() {
     try {
-      java.io.ByteArrayOutputStream s =
-        new java.io.ByteArrayOutputStream();
-      CsvOutputArchive a_ = 
-        new CsvOutputArchive(s);
-      a_.startRecord(this,"");
-    a_.writeInt(type,"type");
-    a_.writeLong(zxid,"zxid");
-    a_.writeBuffer(data,"data");
-    {
-      a_.startVector(authinfo,"authinfo");
-      if (authinfo!= null) {          int len1 = authinfo.size();
-          for(int vidx1 = 0; vidx1<len1; vidx1++) {
-            org.apache.zookeeper.data.Id e1 = (org.apache.zookeeper.data.Id) authinfo.get(vidx1);
-    a_.writeRecord(e1,"e1");
+        java.io.ByteArrayOutputStream s = new java.io.ByteArrayOutputStream();
+        CsvOutputArchive a_ = new CsvOutputArchive(s);
+        a_.startRecord(this,"");
+        a_.writeInt(type,"type");
+        a_.writeLong(zxid,"zxid");
+        a_.writeBuffer(data,"data");
+
+        {
+          a_.startVector(authinfo,"authinfo");
+          if (authinfo!= null) {
+            int len1 = authinfo.size();
+            for(int vidx1 = 0; vidx1<len1; vidx1++) {
+                org.apache.zookeeper.data.Id e1 = (org.apache.zookeeper.data.Id) authinfo.get(vidx1);
+                a_.writeRecord(e1,"e1");
+              }
           }
-      }
-      a_.endVector(authinfo,"authinfo");
-    }
-      a_.endRecord(this,"");
-      return new String(s.toByteArray(), "UTF-8");
+          a_.endVector(authinfo,"authinfo");
+        }
+
+        a_.endRecord(this,"");
+        return new String(s.toByteArray(), "UTF-8");
     } catch (Throwable ex) {
       ex.printStackTrace();
     }
     return "ERROR";
   }
+
   public void write(java.io.DataOutput out) throws java.io.IOException {
     BinaryOutputArchive archive = new BinaryOutputArchive(out);
     serialize(archive, "");
   }
+
   public void readFields(java.io.DataInput in) throws java.io.IOException {
     BinaryInputArchive archive = new BinaryInputArchive(in);
     deserialize(archive, "");
   }
+
   public int compareTo (Object peer_) throws ClassCastException {
     throw new UnsupportedOperationException("comparing QuorumPacket is unimplemented");
   }
+
   public boolean equals(Object peer_) {
     if (!(peer_ instanceof QuorumPacket)) {
       return false;
@@ -156,6 +179,7 @@ public class QuorumPacket implements Record {
     if (!ret) return ret;
      return ret;
   }
+
   public int hashCode() {
     int result = 17;
     int ret;
@@ -169,6 +193,7 @@ public class QuorumPacket implements Record {
     result = 37*result + ret;
     return result;
   }
+
   public static String signature() {
     return "LQuorumPacket(ilB[LId(ss)])";
   }

@@ -17,13 +17,7 @@
  */
 package org.apache.zookeeper.server.quorum;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -59,11 +53,13 @@ import org.slf4j.LoggerFactory;
  * ensemble: Followers and Observers. Both Followers and Observers share 
  * a good deal of code which is moved into Peer to avoid duplication. 
  */
-public class Learner {       
+public class Learner {
+
     static class PacketInFlight {
         TxnHeader hdr;
         Record rec;
     }
+
     QuorumPeer self;
     LearnerZooKeeperServer zk;
     
@@ -80,19 +76,20 @@ public class Learner {
     }
     
     protected InputArchive leaderIs;
-    protected OutputArchive leaderOs;  
+    protected OutputArchive leaderOs;
+
     /** the protocol version of the leader */
     protected int leaderProtocolVersion = 0x01;
     
     protected static final Logger LOG = LoggerFactory.getLogger(Learner.class);
 
     static final private boolean nodelay = System.getProperty("follower.nodelay", "true").equals("true");
+
     static {
         LOG.info("TCP NoDelay set to: " + nodelay);
     }   
     
-    final ConcurrentHashMap<Long, ServerCnxn> pendingRevalidations =
-        new ConcurrentHashMap<Long, ServerCnxn>();
+    final ConcurrentHashMap<Long, ServerCnxn> pendingRevalidations = new ConcurrentHashMap<Long, ServerCnxn>();
     
     public int getPendingRevalidationsCount() {
         return pendingRevalidations.size();
@@ -108,22 +105,17 @@ public class Learner {
      * @return
      * @throws IOException
      */
-    void validateSession(ServerCnxn cnxn, long clientId, int timeout)
-            throws IOException {
+    void validateSession(ServerCnxn cnxn, long clientId, int timeout) throws IOException {
         LOG.info("Revalidating client: 0x" + Long.toHexString(clientId));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         dos.writeLong(clientId);
         dos.writeInt(timeout);
         dos.close();
-        QuorumPacket qp = new QuorumPacket(Leader.REVALIDATE, -1, baos
-                .toByteArray(), null);
+        QuorumPacket qp = new QuorumPacket(Leader.REVALIDATE, -1, baos.toByteArray(), null);
         pendingRevalidations.put(clientId, cnxn);
         if (LOG.isTraceEnabled()) {
-            ZooTrace.logTraceMessage(LOG,
-                                     ZooTrace.SESSION_TRACE_MASK,
-                                     "To validate session 0x"
-                                     + Long.toHexString(clientId));
+            ZooTrace.logTraceMessage(LOG, ZooTrace.SESSION_TRACE_MASK, "To validate session 0x" + Long.toHexString(clientId));
         }
         writePacket(qp, true);
     }     
@@ -154,13 +146,17 @@ public class Learner {
      * @throws IOException
      */
     void readPacket(QuorumPacket pp) throws IOException {
+
         synchronized (leaderIs) {
             leaderIs.readRecord(pp, "packet");
         }
+
         long traceMask = ZooTrace.SERVER_PACKET_TRACE_MASK;
+
         if (pp.getType() == Leader.PING) {
             traceMask = ZooTrace.SERVER_PING_TRACE_MASK;
         }
+
         if (LOG.isTraceEnabled()) {
             ZooTrace.logQuorumPacket(LOG, traceMask, 'i', pp);
         }
@@ -188,8 +184,7 @@ public class Learner {
             oa.write(b);
         }
         oa.close();
-        QuorumPacket qp = new QuorumPacket(Leader.REQUEST, -1, baos
-                .toByteArray(), request.authInfo);
+        QuorumPacket qp = new QuorumPacket(Leader.REQUEST, -1, baos.toByteArray(), request.authInfo);
         writePacket(qp, true);
     }
     
@@ -210,8 +205,7 @@ public class Learner {
             }
         }
         if (leaderServer == null) {
-            LOG.warn("Couldn't find the leader with id = "
-                    + current.getId());
+            LOG.warn("Couldn't find the leader with id = " + current.getId());
         }
         return leaderServer;
     }
@@ -228,8 +222,7 @@ public class Learner {
      * Overridable helper method to simply call sock.connect(). This can be
      * overriden in tests to fake connection success/failure for connectToLeader. 
      */
-    protected void sockConnect(Socket sock, InetSocketAddress addr, int timeout) 
-    throws IOException {
+    protected void sockConnect(Socket sock, InetSocketAddress addr, int timeout) throws IOException {
         sock.connect(addr, timeout);
     }
 
@@ -242,8 +235,8 @@ public class Learner {
      * @throws ConnectException
      * @throws InterruptedException
      */
-    protected void connectToLeader(InetSocketAddress addr, String hostname)
-            throws IOException, InterruptedException, X509Exception {
+    protected void connectToLeader(InetSocketAddress addr, String hostname) throws IOException, InterruptedException, X509Exception {
+
         this.sock = createSocket();
 
         int initLimitTime = self.tickTime * self.initLimit;
@@ -260,10 +253,104 @@ public class Learner {
                 }
 
                 sockConnect(sock, addr, Math.min(self.tickTime * self.syncLimit, remainingInitLimitTime));
+
+
                 if (self.isSslQuorum())  {
                     ((SSLSocket) sock).startHandshake();
                 }
-                sock.setTcpNoDelay(nodelay);
+
+                /**
+                // TcpNoDelay=false，为启用nagle算法，也是默认值。 Nagle算法的立意是良好的，
+                // 避免网络中充塞小封包，提高网络的利用率。
+                // 但是当Nagle算法遇到delayed ACK悲剧就发生了。
+                // Delayed ACK的本意也是为了提高TCP性能，跟应答数据捎带上ACK，
+                // 同时避免糊涂窗口综合症，也可以一个ack确认多个段来节省开销。
+
+                // 悲剧发生在这种情况，假设一端发送数据并等待另一端应答，协议上分为头部和数据，
+                // 发送的时候不幸地选择了write-write，然后再read，也就是先发送头部，再发送数据，最后等待应答。
+                // 实验模型：
+                // 发送端（客户端）
+                // write(head);
+                // write(body);
+                // read(response);
+
+                // 接收端（服务端）
+                // read(request);
+                // process(request);
+                // write(response);
+                // 这里假设head和body都比较小，当默认启用nagle算法，并且是第一次发送的时候，根据nagle算法，
+                // 第一个段head可以立即发送，因为没有等待确认的段；接收端（服务端）收到head，但是包不完整，继续等待body达到并延迟ACK；
+                // 发送端（客户端）继续写入body，这时候nagle算法起作用了，因为head还没有被ACK，所以body要延迟发送。
+                // 这就造成了发送端（客户端）和接收端（服务端）都在等待对方发送数据的现象：
+
+                // 发送端（客户端）等待接收端ACK head以便继续发送body；
+                // 接收端（服务端）在等待发送方发送body并延迟ACK，悲剧的无以言语。
+                // 这种时候只有等待一端超时并发送数据才能继续往下走。
+
+                //
+                //  客服端
+                //  public class Client {
+                //                    private static Logger logger = Logger.getLogger(Client.class);
+                //                    public static void main(String[] args) throws Exception {
+                //                        // 是否分开写head和body
+                //                        boolean writeSplit = true;
+                //                        String host = "localhost";
+                //                        logger.debug("WriteSplit:" + writeSplit);
+                //
+                //                        Socket socket = new Socket();
+                //                        socket.setTcpNoDelay(false);
+                //                        socket.connect(new InetSocketAddress(host, 10000));
+                //
+                //                        InputStream in = socket.getInputStream();
+                //                        OutputStream out = socket.getOutputStream();
+                //                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                //
+                //                        String head = "hello ";
+                //                        String body = "world\r\n";
+                //                        for (int i = 0; i < 10; i++) {
+                //                            long label = System.currentTimeMillis();
+                //                            if (writeSplit) {
+                //                                out.write(head.getBytes());
+                //                                out.write(body.getBytes());
+                //                            } else {
+                //                                out.write((head + body).getBytes());
+                //                            }
+                //                            String line = reader.readLine();
+                //                            logger.debug("RTT:" + (System.currentTimeMillis() - label) + ", receive: " + line);
+                //                        }
+                //                        in.close();
+                //                        out.close();
+                //                        socket.close();
+                //                    }
+                //                }
+
+                // 服务端
+                // public static void main(String[] args) throws Exception {
+                //		ServerSocket serverSocket = new ServerSocket();
+                //		serverSocket.bind(new InetSocketAddress(10000));
+                //		logger.debug(serverSocket);
+                //		logger.debug("Server startup at 10000");
+                //		while (true) {
+                //			Socket socket = serverSocket.accept();
+                //			InputStream in = socket.getInputStream();
+                //			OutputStream out = socket.getOutputStream();
+                //
+                //			while (true) {
+                //				try {
+                //					BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                //					String line = reader.readLine();
+                //					logger.debug(line);
+                //					out.write((line + "\r\n").getBytes());
+                //				} catch (Exception e) {
+                //					break;
+                //				}
+                //			}
+                //		}
+                //	}
+                //
+                 */
+
+                 sock.setTcpNoDelay(nodelay);
                 break;
             } catch (IOException e) {
                 remainingInitLimitTime = initLimitTime - (int)((nanoTime() - startNanoTime) / 1000000);
@@ -288,10 +375,10 @@ public class Learner {
             Thread.sleep(1000);
         }
 
+        // 对leader进行身份验证
         self.authLearner.authenticate(sock, hostname);
 
-        leaderIs = BinaryInputArchive.getArchive(new BufferedInputStream(
-                sock.getInputStream()));
+        leaderIs = BinaryInputArchive.getArchive(new BufferedInputStream(sock.getInputStream()));
         bufferedOutput = new BufferedOutputStream(sock.getOutputStream());
         leaderOs = BinaryOutputArchive.getArchive(bufferedOutput);
     }
@@ -326,20 +413,27 @@ public class Learner {
         /*
          * Add sid to payload
          */
+        // 当前节点的leader信息
         LearnerInfo li = new LearnerInfo(self.getId(), 0x10000, self.getQuorumVerifier().getVersion());
         ByteArrayOutputStream bsid = new ByteArrayOutputStream();
         BinaryOutputArchive boa = BinaryOutputArchive.getArchive(bsid);
         boa.writeRecord(li, "LearnerInfo");
         qp.setData(bsid.toByteArray());
-        
+
+        // 发送包到 bufferedOutput（与leader节点建立的长连接）
         writePacket(qp, true);
-        readPacket(qp);        
+        // 获取leader节点返回的信息包
+        readPacket(qp);
+
+        // 当前leader执行的最大事务ID
         final long newEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid());
+
 		if (qp.getType() == Leader.LEADERINFO) {
         	// we are connected to a 1.0 server so accept the new epoch and read the next packet
         	leaderProtocolVersion = ByteBuffer.wrap(qp.getData()).getInt();
         	byte epochBytes[] = new byte[4];
         	final ByteBuffer wrappedEpochBytes = ByteBuffer.wrap(epochBytes);
+
         	if (newEpoch > self.getAcceptedEpoch()) {
         		wrappedEpochBytes.putInt((int)self.getCurrentEpoch());
         		self.setAcceptedEpoch(newEpoch);
@@ -352,13 +446,16 @@ public class Learner {
         	} else {
         		throw new IOException("Leaders epoch, " + newEpoch + " is less than accepted epoch, " + self.getAcceptedEpoch());
         	}
+
         	QuorumPacket ackNewEpoch = new QuorumPacket(Leader.ACKEPOCH, lastLoggedZxid, epochBytes, null);
         	writePacket(ackNewEpoch, true);
             return ZxidUtils.makeZxid(newEpoch, 0);
         } else {
+            // 当前事务ID 大于 接受同步的事务ID
         	if (newEpoch > self.getAcceptedEpoch()) {
         		self.setAcceptedEpoch(newEpoch);
         	}
+
             if (qp.getType() != Leader.NEWLEADER) {
                 LOG.error("First packet should have been NEWLEADER");
                 throw new IOException("First packet should have been NEWLEADER");
@@ -374,6 +471,7 @@ public class Learner {
      * @throws InterruptedException
      */
     protected void syncWithLeader(long newLeaderZxid) throws Exception{
+
         QuorumPacket ack = new QuorumPacket(Leader.ACK, 0, null, null);
         QuorumPacket qp = new QuorumPacket();
         long newEpoch = ZxidUtils.getEpochFromZxid(newLeaderZxid);
@@ -411,21 +509,18 @@ public class Learner {
                 zk.getZKDatabase().setlastProcessedZxid(qp.getZxid());
             } else if (qp.getType() == Leader.TRUNC) {
                 //we need to truncate the log to the lastzxid of the leader
-                LOG.warn("Truncating log to get in sync with the leader 0x"
-                        + Long.toHexString(qp.getZxid()));
+                LOG.warn("Truncating log to get in sync with the leader 0x" + Long.toHexString(qp.getZxid()));
                 boolean truncated=zk.getZKDatabase().truncateLog(qp.getZxid());
                 if (!truncated) {
                     // not able to truncate the log
-                    LOG.error("Not able to truncate the log "
-                            + Long.toHexString(qp.getZxid()));
+                    LOG.error("Not able to truncate the log " + Long.toHexString(qp.getZxid()));
                     System.exit(13);
                 }
                 zk.getZKDatabase().setlastProcessedZxid(qp.getZxid());
 
             }
             else {
-                LOG.error("Got unexpected packet from leader: {}, exiting ... ",
-                          LearnerHandler.packetToString(qp));
+                LOG.error("Got unexpected packet from leader: {}, exiting ... ", LearnerHandler.packetToString(qp));
                 System.exit(13);
 
             }
@@ -471,8 +566,7 @@ public class Learner {
                     pif = packetsNotCommitted.peekFirst();
                     if (pif.hdr.getZxid() == qp.getZxid() && qp.getType() == Leader.COMMITANDACTIVATE) {
                         QuorumVerifier qv = self.configFromString(new String(((SetDataTxn) pif.rec).getData()));
-                        boolean majorChange = self.processReconfig(qv, ByteBuffer.wrap(qp.getData()).getLong(),
-                                qp.getZxid(), true);
+                        boolean majorChange = self.processReconfig(qv, ByteBuffer.wrap(qp.getData()).getLong(), qp.getZxid(), true);
                         if (majorChange) {
                             throw new Exception("changes proposed in reconfig");
                         }
@@ -500,8 +594,7 @@ public class Learner {
                         buffer.get(remainingdata);
                         packet.rec = SerializeUtils.deserializeTxn(remainingdata, packet.hdr);
                         QuorumVerifier qv = self.configFromString(new String(((SetDataTxn)packet.rec).getData()));
-                        boolean majorChange =
-                                self.processReconfig(qv, suggestedLeaderId, qp.getZxid(), true);
+                        boolean majorChange = self.processReconfig(qv, suggestedLeaderId, qp.getZxid(), true);
                         if (majorChange) {
                             throw new Exception("changes proposed in reconfig");
                         }
@@ -623,17 +716,12 @@ public class Learner {
         boolean valid = dis.readBoolean();
         ServerCnxn cnxn = pendingRevalidations.remove(sessionId);
         if (cnxn == null) {
-            LOG.warn("Missing session 0x"
-                    + Long.toHexString(sessionId)
-                    + " for validation");
+            LOG.warn("Missing session 0x" + Long.toHexString(sessionId) + " for validation");
         } else {
             zk.finishSessionInit(cnxn, valid);
         }
         if (LOG.isTraceEnabled()) {
-            ZooTrace.logTraceMessage(LOG,
-                    ZooTrace.SESSION_TRACE_MASK,
-                    "Session 0x" + Long.toHexString(sessionId)
-                    + " is valid: " + valid);
+            ZooTrace.logTraceMessage(LOG, ZooTrace.SESSION_TRACE_MASK, "Session 0x" + Long.toHexString(sessionId) + " is valid: " + valid);
         }
     }
         

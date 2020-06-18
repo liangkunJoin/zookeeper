@@ -36,6 +36,5 @@ public interface QuorumAuthServer {
      *            stream used to read auth data send by the quorum learner
      * @throws IOException if the server fails to authenticate connecting quorum learner
      */
-    public void authenticate(Socket sock, DataInputStream din)
-            throws IOException;
+    public void authenticate(Socket sock, DataInputStream din) throws IOException;
 }

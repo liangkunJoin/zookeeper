@@ -72,8 +72,7 @@ public class SaslQuorumAuthServer implements QuorumAuthServer {
     }
 
     @Override
-    public void authenticate(Socket sock, DataInputStream din)
-            throws SaslException {
+    public void authenticate(Socket sock, DataInputStream din) throws SaslException {
         DataOutputStream dout = null;
         SaslServer ss = null;
         try {
@@ -101,8 +100,7 @@ public class SaslQuorumAuthServer implements QuorumAuthServer {
                     // limited number of retries.
                     if (++tries > MAX_RETRIES) {
                         send(dout, challenge, QuorumAuth.Status.ERROR);
-                        LOG.warn("Failed to authenticate using SASL, server addr: {}, retries={} exceeded.",
-                                sock.getRemoteSocketAddress(), tries);
+                        LOG.warn("Failed to authenticate using SASL, server addr: {}, retries={} exceeded.", sock.getRemoteSocketAddress(), tries);
                         break;
                     }
                     send(dout, challenge, QuorumAuth.Status.IN_PROGRESS);
@@ -134,11 +132,8 @@ public class SaslQuorumAuthServer implements QuorumAuthServer {
                         "Failed to authenticate using SASL: " + e.getMessage());
             } else {
                 LOG.warn("Failed to authenticate using SASL", e);
-                LOG.warn("Maintaining learner connection despite SASL authentication failure."
-                                + " server addr: {}, {}: {}",
-                        new Object[] { sock.getRemoteSocketAddress(),
-                                QuorumAuth.QUORUM_SERVER_SASL_AUTH_REQUIRED,
-                                quorumRequireSasl });
+                LOG.warn("Maintaining learner connection despite SASL authentication failure. server addr: {}, {}: {}",
+                        new Object[] { sock.getRemoteSocketAddress(), QuorumAuth.QUORUM_SERVER_SASL_AUTH_REQUIRED, quorumRequireSasl });
                 return; // let it through, we don't require auth
             }
         } finally {

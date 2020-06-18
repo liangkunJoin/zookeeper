@@ -211,8 +211,7 @@ public class FileTxnSnapLog {
      * @return the highest zxid restored
      * @throws IOException
      */
-    public long restore(DataTree dt, Map<Long, Integer> sessions,
-                        PlayBackListener listener) throws IOException {
+    public long restore(DataTree dt, Map<Long, Integer> sessions, PlayBackListener listener) throws IOException {
         long deserializeResult = snapLog.deserialize(dt, sessions);
         FileTxnLog txnLog = new FileTxnLog(dataDir);
         if (-1L == deserializeResult) {
@@ -233,6 +232,7 @@ public class FileTxnSnapLog {
             /* return a zxid of zero, since we the database is empty */
             return 0;
         }
+        // 将还没打快照的数据重新执行事务加载数据到dataTree
         return fastForwardFromEdits(dt, sessions, listener);
     }
 
@@ -319,14 +319,11 @@ public class FileTxnSnapLog {
      * @param sessions the sessions to be restored
      * @param txn the transaction to be applied
      */
-    public void processTransaction(TxnHeader hdr,DataTree dt,
-            Map<Long, Integer> sessions, Record txn)
-        throws KeeperException.NoNodeException {
+    public void processTransaction(TxnHeader hdr,DataTree dt, Map<Long, Integer> sessions, Record txn) throws KeeperException.NoNodeException {
         ProcessTxnResult rc;
         switch (hdr.getType()) {
         case OpCode.createSession:
-            sessions.put(hdr.getClientId(),
-                    ((CreateSessionTxn) txn).getTimeOut());
+            sessions.put(hdr.getClientId(), ((CreateSessionTxn) txn).getTimeOut());
             if (LOG.isTraceEnabled()) {
                 ZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,
                         "playLog --- create session in log: 0x"

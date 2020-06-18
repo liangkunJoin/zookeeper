@@ -56,9 +56,8 @@ public final class SecurityUtils {
      * @return saslclient object
      * @throws SaslException
      */
-    public static SaslClient createSaslClient(final Subject subject,
-            final String servicePrincipal, final String protocol,
-            final String serverName, final Logger LOG, final String entity) throws SaslException {
+    public static SaslClient createSaslClient(final Subject subject, final String servicePrincipal,
+                                              final String protocol, final String serverName, final Logger LOG, final String entity) throws SaslException {
         SaslClient saslClient;
         // Use subject.getPrincipals().isEmpty() as an indication of which SASL
         // mechanism to use: if empty, use DIGEST-MD5; otherwise, use GSSAPI.
@@ -67,20 +66,16 @@ public final class SecurityUtils {
             // instead.
             LOG.info("{} will use DIGEST-MD5 as SASL mechanism.", entity);
             String[] mechs = { "DIGEST-MD5" };
-            String username = (String) (subject.getPublicCredentials()
-                    .toArray()[0]);
-            String password = (String) (subject.getPrivateCredentials()
-                    .toArray()[0]);
+            String username = (String) (subject.getPublicCredentials().toArray()[0]);
+            String password = (String) (subject.getPrivateCredentials().toArray()[0]);
             // 'domain' parameter is hard-wired between the server and client
-            saslClient = Sasl.createSaslClient(mechs, username, protocol,
-                    serverName, null, new SaslClientCallbackHandler(password, entity));
+            saslClient = Sasl.createSaslClient(mechs, username, protocol, serverName, null, new SaslClientCallbackHandler(password, entity));
             return saslClient;
         } else { // GSSAPI.
             final Object[] principals = subject.getPrincipals().toArray();
             // determine client principal from subject.
             final Principal clientPrincipal = (Principal) principals[0];
-            boolean usingNativeJgss = Boolean
-                    .getBoolean("sun.security.jgss.native");
+            boolean usingNativeJgss = Boolean.getBoolean("sun.security.jgss.native");
             if (usingNativeJgss) {
                 // http://docs.oracle.com/javase/6/docs/technotes/guides/security/jgss/jgss-features.html
                 // """
@@ -94,26 +89,19 @@ public final class SecurityUtils {
                 try {
                     GSSManager manager = GSSManager.getInstance();
                     Oid krb5Mechanism = new Oid("1.2.840.113554.1.2.2");
-                    GSSCredential cred = manager.createCredential(null,
-                            GSSContext.DEFAULT_LIFETIME, krb5Mechanism,
-                            GSSCredential.INITIATE_ONLY);
+                    GSSCredential cred = manager.createCredential(null, GSSContext.DEFAULT_LIFETIME, krb5Mechanism, GSSCredential.INITIATE_ONLY);
                     subject.getPrivateCredentials().add(cred);
-                    LOG.debug("Added private credential to {} principal name: '{}'",
-                            entity, clientPrincipal);
+                    LOG.debug("Added private credential to {} principal name: '{}'", entity, clientPrincipal);
                 } catch (GSSException ex) {
-                    LOG.warn("Cannot add private credential to subject; "
-                                    + "authentication at the server may fail", ex);
+                    LOG.warn("Cannot add private credential to subject; " + "authentication at the server may fail", ex);
                 }
             }
-            final KerberosName clientKerberosName = new KerberosName(
-                    clientPrincipal.getName());
+            final KerberosName clientKerberosName = new KerberosName(clientPrincipal.getName());
             // assume that server and client are in the same realm (by default;
             // unless the system property
             // "zookeeper.server.realm" is set).
-            String serverRealm = System.getProperty("zookeeper.server.realm",
-                    clientKerberosName.getRealm());
-            KerberosName serviceKerberosName = new KerberosName(
-                    servicePrincipal + "@" + serverRealm);
+            String serverRealm = System.getProperty("zookeeper.server.realm", clientKerberosName.getRealm());
+            KerberosName serviceKerberosName = new KerberosName(servicePrincipal + "@" + serverRealm);
             final String serviceName = serviceKerberosName.getServiceName();
             final String serviceHostname = serviceKerberosName.getHostName();
             final String clientPrincipalName = clientKerberosName.toString();
@@ -125,10 +113,8 @@ public final class SecurityUtils {
                                 String[] mechs = { "GSSAPI" };
                                 LOG.debug("creating sasl client: {}={};service={};serviceHostname={}",
                                         new Object[] { entity, clientPrincipalName, serviceName, serviceHostname });
-                                SaslClient saslClient = Sasl.createSaslClient(
-                                        mechs, clientPrincipalName, serviceName,
-                                        serviceHostname, null,
-                                        new SaslClientCallbackHandler(null, entity));
+                                SaslClient saslClient = Sasl.createSaslClient(mechs, clientPrincipalName, serviceName, serviceHostname, null,
+                                                                                                        new SaslClientCallbackHandler(null, entity));
                                 return saslClient;
                             }
                         });

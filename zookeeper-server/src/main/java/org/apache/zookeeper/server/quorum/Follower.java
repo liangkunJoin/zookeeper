@@ -63,21 +63,28 @@ public class Follower extends Learner{
      * @throws InterruptedException
      */
     void followLeader() throws InterruptedException {
+
         self.end_fle = Time.currentElapsedTime();
+
         long electionTimeTaken = self.end_fle - self.start_fle;
+
         self.setElectionTimeTaken(electionTimeTaken);
-        LOG.info("FOLLOWING - LEADER ELECTION TOOK - {} {}", electionTimeTaken,
-                QuorumPeer.FLE_TIME_UNIT);
+
+        LOG.info("FOLLOWING - LEADER ELECTION TOOK - {} {}", electionTimeTaken, QuorumPeer.FLE_TIME_UNIT);
+
         self.start_fle = 0;
         self.end_fle = 0;
         fzk.registerJMX(new FollowerBean(this, zk), self.jmxLocalPeerBean);
         try {
             QuorumServer leaderServer = findLeader();            
             try {
+                // 连接leader，并验证身份
                 connectToLeader(leaderServer.addr, leaderServer.hostname);
+                // 执行握手协议以 建立跟随/观察连接
                 long newEpochZxid = registerWithLeader(Leader.FOLLOWERINFO);
-                if (self.isReconfigStateChange())
-                   throw new Exception("learned about role change");
+                if (self.isReconfigStateChange()) {
+                    throw new Exception("learned about role change");
+                }
                 //check to see if the leader zxid is lower than ours
                 //this should never happen but is just a safety check
                 long newEpoch = ZxidUtils.getEpochFromZxid(newEpochZxid);

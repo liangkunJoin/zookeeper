@@ -27,6 +27,7 @@ import java.io.InputStream;
  *
  */
 public class BinaryInputArchive implements InputArchive {
+
     static public final String UNREASONBLE_LENGTH= "Unreasonable length = ";
     private DataInput in;
     
@@ -46,6 +47,7 @@ public class BinaryInputArchive implements InputArchive {
             nelems--;
         }
     }
+
     /** Creates a new instance of BinaryInputArchive */
     public BinaryInputArchive(DataInput in) {
         this.in = in;

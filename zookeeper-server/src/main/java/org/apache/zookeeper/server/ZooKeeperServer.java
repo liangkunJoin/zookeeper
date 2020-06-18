@@ -478,6 +478,18 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
 
 
         // 预先处理请求，处理请求过来的数据
+        // 1、将Request添加到submittedRequests队列中
+        // 2、线程不停的从submittedRequests获取请求
+        // 3、根据请求的类型不同的处理，以create为例
+        // 4、获取父节点信息
+        // 5、校验ACL
+        // 6、临时节点与顺序节点逻辑
+        // 7、生成txn事务
+        // 8、生成父节点修改记录
+        // 9、生成新增节点修改记录
+        // 10、将
+        //
+        //
         firstProcessor = new PrepRequestProcessor(this, syncProcessor);
         ((PrepRequestProcessor)firstProcessor).start();
     }

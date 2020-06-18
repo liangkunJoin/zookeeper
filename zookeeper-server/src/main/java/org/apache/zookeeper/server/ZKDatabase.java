@@ -101,19 +101,16 @@ public class ZKDatabase {
 
         try {
             snapshotSizeFactor = Double.parseDouble(
-                System.getProperty(SNAPSHOT_SIZE_FACTOR,
-                        Double.toString(DEFAULT_SNAPSHOT_SIZE_FACTOR)));
+                System.getProperty(SNAPSHOT_SIZE_FACTOR, Double.toString(DEFAULT_SNAPSHOT_SIZE_FACTOR)));
             if (snapshotSizeFactor > 1) {
                 snapshotSizeFactor = DEFAULT_SNAPSHOT_SIZE_FACTOR;
-                LOG.warn("The configured {} is invalid, going to use " +
-                        "the default {}", SNAPSHOT_SIZE_FACTOR,
-                        DEFAULT_SNAPSHOT_SIZE_FACTOR);
+                LOG.warn("The configured {} is invalid, going to use " + "the default {}", SNAPSHOT_SIZE_FACTOR, DEFAULT_SNAPSHOT_SIZE_FACTOR);
             }
         } catch (NumberFormatException e) {
-            LOG.error("Error parsing {}, using default value {}",
-                    SNAPSHOT_SIZE_FACTOR, DEFAULT_SNAPSHOT_SIZE_FACTOR);
+            LOG.error("Error parsing {}, using default value {}", SNAPSHOT_SIZE_FACTOR, DEFAULT_SNAPSHOT_SIZE_FACTOR);
             snapshotSizeFactor = DEFAULT_SNAPSHOT_SIZE_FACTOR;
         }
+
         LOG.info("{} = {}", SNAPSHOT_SIZE_FACTOR, snapshotSizeFactor);
     }
 
@@ -272,6 +269,7 @@ public class ZKDatabase {
                 committedLog.removeFirst();
                 minCommittedLog = committedLog.getFirst().packet.getZxid();
             }
+
             if (committedLog.isEmpty()) {
                 minCommittedLog = request.zxid;
                 maxCommittedLog = request.zxid;
@@ -321,8 +319,7 @@ public class ZKDatabase {
      *                  0 is unlimited, negative value means disable.
      * @return list of proposal (request part of each proposal is null)
      */
-    public Iterator<Proposal> getProposalsFromTxnLog(long startZxid,
-                                                     long sizeLimit) {
+    public Iterator<Proposal> getProposalsFromTxnLog(long startZxid, long sizeLimit) {
         if (sizeLimit < 0) {
             LOG.debug("Negative size limit - retrieving proposal via txnlog is disabled");
             return TxnLogProposalIterator.EMPTY_ITERATOR;
@@ -335,10 +332,8 @@ public class ZKDatabase {
 
             // If we cannot guarantee that this is strictly the starting txn
             // after a given zxid, we should fail.
-            if ((itr.getHeader() != null)
-                    && (itr.getHeader().getZxid() > startZxid)) {
-                LOG.warn("Unable to find proposals from txnlog for zxid: "
-                        + startZxid);
+            if ((itr.getHeader() != null) && (itr.getHeader().getZxid() > startZxid)) {
+                LOG.warn("Unable to find proposals from txnlog for zxid: " + startZxid);
                 itr.close();
                 return TxnLogProposalIterator.EMPTY_ITERATOR;
             }
@@ -346,8 +341,7 @@ public class ZKDatabase {
             if (sizeLimit > 0) {
                 long txnSize = itr.getStorageSize();
                 if (txnSize > sizeLimit) {
-                    LOG.info("Txnlog size: " + txnSize + " exceeds sizeLimit: "
-                            + sizeLimit);
+                    LOG.info("Txnlog size: " + txnSize + " exceeds sizeLimit: " + sizeLimit);
                     itr.close();
                     return TxnLogProposalIterator.EMPTY_ITERATOR;
                 }
@@ -475,8 +469,7 @@ public class ZKDatabase {
      * @param childWatches the child watches the client wants to reset
      * @param watcher the watcher function
      */
-    public void setWatches(long relativeZxid, List<String> dataWatches,
-            List<String> existWatches, List<String> childWatches, Watcher watcher) {
+    public void setWatches(long relativeZxid, List<String> dataWatches, List<String> existWatches, List<String> childWatches, Watcher watcher) {
         dataTree.setWatches(relativeZxid, dataWatches, existWatches, childWatches, watcher);
     }
 
@@ -499,8 +492,7 @@ public class ZKDatabase {
      * @return the list of children for this path
      * @throws KeeperException.NoNodeException
      */
-    public List<String> getChildren(String path, Stat stat, Watcher watcher)
-    throws KeeperException.NoNodeException {
+    public List<String> getChildren(String path, Stat stat, Watcher watcher) throws KeeperException.NoNodeException {
         return dataTree.getChildren(path, stat, watcher);
     }
 
@@ -558,8 +550,7 @@ public class ZKDatabase {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void serializeSnapshot(OutputArchive oa) throws IOException,
-    InterruptedException {
+    public void serializeSnapshot(OutputArchive oa) throws IOException, InterruptedException {
         SerializeUtils.serializeSnapshot(getDataTree(), oa, getSessionWithTimeOuts());
     }
 
