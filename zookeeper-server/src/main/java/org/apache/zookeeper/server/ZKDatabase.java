@@ -290,8 +290,7 @@ public class ZKDatabase {
     public boolean isTxnLogSyncEnabled() {
         boolean enabled = snapshotSizeFactor >= 0;
         if (enabled) {
-            LOG.info("On disk txn sync enabled with snapshotSizeFactor "
-                + snapshotSizeFactor);
+            LOG.info("On disk txn sync enabled with snapshotSizeFactor " + snapshotSizeFactor);
         } else {
             LOG.info("On disk txn sync disabled");
         }
@@ -320,6 +319,7 @@ public class ZKDatabase {
      * @return list of proposal (request part of each proposal is null)
      */
     public Iterator<Proposal> getProposalsFromTxnLog(long startZxid, long sizeLimit) {
+
         if (sizeLimit < 0) {
             LOG.debug("Negative size limit - retrieving proposal via txnlog is disabled");
             return TxnLogProposalIterator.EMPTY_ITERATOR;
@@ -346,6 +346,7 @@ public class ZKDatabase {
                     return TxnLogProposalIterator.EMPTY_ITERATOR;
                 }
             }
+
         } catch (IOException e) {
             LOG.error("Unable to read txnlog from disk", e);
             try {

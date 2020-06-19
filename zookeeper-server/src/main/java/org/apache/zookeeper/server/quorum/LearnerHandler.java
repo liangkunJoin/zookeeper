@@ -783,8 +783,7 @@ public class LearnerHandler extends ZooKeeperThread {
 
                 // Calculate sizeLimit that we allow to retrieve txnlog from disk
                 long sizeLimit = db.calculateTxnLogSizeLimit();
-                // This method can return empty iterator if the requested zxid
-                // is older than on-disk txnlog
+                // This method can return empty iterator if the requested zxid is older than on-disk txnlog
                 Iterator<Proposal> txnLogItr = db.getProposalsFromTxnLog(peerLastZxid, sizeLimit);
                 if (txnLogItr.hasNext()) {
                     LOG.info("Use txnlog and committedLog for peer sid: " +  getSid());
@@ -795,6 +794,8 @@ public class LearnerHandler extends ZooKeeperThread {
                     currentZxid = queueCommittedProposals(committedLogItr, currentZxid, null, maxCommittedLog);
                     needSnap = false;
                 }
+
+
                 // closing the resources
                 if (txnLogItr instanceof TxnLogProposalIterator) {
                     TxnLogProposalIterator txnProposalItr = (TxnLogProposalIterator) txnLogItr;
@@ -839,11 +840,13 @@ public class LearnerHandler extends ZooKeeperThread {
         // proposal Id.
 
         long prevProposalZxid = -1;
+
         while (itr.hasNext()) {
 
             Proposal propose = itr.next();
 
             long packetZxid = propose.packet.getZxid();
+
             // abort if we hit the limit
             if ((maxZxid != null) && (packetZxid > maxZxid)) {
                 break;
@@ -855,8 +858,7 @@ public class LearnerHandler extends ZooKeeperThread {
                 continue;
             }
 
-            // If we are sending the first packet, figure out whether to trunc
-            // or diff
+            // If we are sending the first packet, figure out whether to trunc or diff
             if (needOpPacket) {
 
                 // Send diff when we see the follower's zxid in our history
