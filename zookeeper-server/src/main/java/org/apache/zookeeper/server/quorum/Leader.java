@@ -1201,7 +1201,7 @@ public class Leader {
                 return epoch;
             }
 
-            // 获取最大届并且 +1 作为follower的下一届数字
+            // 获取最大届并且 +1 作为 follower 的下一届数字
             if (lastAcceptedEpoch >= epoch) {
                 epoch = lastAcceptedEpoch + 1;
             }

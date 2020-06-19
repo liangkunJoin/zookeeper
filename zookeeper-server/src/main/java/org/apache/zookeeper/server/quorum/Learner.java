@@ -426,7 +426,7 @@ public class Learner {
         // 获取leader节点返回的信息包，主要是届+事务id
         readPacket(qp);
 
-        // 当前leader执行的最大事务ID
+        // 获取当前leader执行的最新届
         final long newEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid());
 
 		if (qp.getType() == Leader.LEADERINFO) {

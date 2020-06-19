@@ -92,8 +92,7 @@ import org.slf4j.LoggerFactory;
 public class FileTxnLog implements TxnLog {
     private static final Logger LOG;
 
-    public final static int TXNLOG_MAGIC =
-        ByteBuffer.wrap("ZKLG".getBytes()).getInt();
+    public final static int TXNLOG_MAGIC = ByteBuffer.wrap("ZKLG".getBytes()).getInt();
 
     public final static int VERSION = 2;
 
@@ -110,8 +109,9 @@ public class FileTxnLog implements TxnLog {
 
         /** Local variable to read fsync.warningthresholdms into */
         Long fsyncWarningThreshold;
-        if ((fsyncWarningThreshold = Long.getLong(ZOOKEEPER_FSYNC_WARNING_THRESHOLD_MS_PROPERTY)) == null)
+        if ((fsyncWarningThreshold = Long.getLong(ZOOKEEPER_FSYNC_WARNING_THRESHOLD_MS_PROPERTY)) == null) {
             fsyncWarningThreshold = Long.getLong(FSYNC_WARNING_THRESHOLD_MS_PROPERTY, 1000);
+        }
         fsyncWarningThresholdMS = fsyncWarningThreshold;
     }
 
@@ -123,8 +123,8 @@ public class FileTxnLog implements TxnLog {
     File logDir;
     private final boolean forceSync = !System.getProperty("zookeeper.forceSync", "yes").equals("no");
     long dbId;
-    private LinkedList<FileOutputStream> streamsToFlush =
-        new LinkedList<FileOutputStream>();
+    private LinkedList<FileOutputStream> streamsToFlush = new LinkedList<FileOutputStream>();
+
     File logFileWrite = null;
     private FilePadding filePadding = new FilePadding();
 
@@ -205,9 +205,7 @@ public class FileTxnLog implements TxnLog {
             return false;
         }
         if (hdr.getZxid() <= lastZxidSeen) {
-            LOG.warn("Current zxid " + hdr.getZxid()
-                    + " is <= " + lastZxidSeen + " for "
-                    + hdr.getType());
+            LOG.warn("Current zxid " + hdr.getZxid() + " is <= " + lastZxidSeen + " for " + hdr.getType());
         } else {
             lastZxidSeen = hdr.getZxid();
         }

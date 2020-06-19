@@ -377,8 +377,7 @@ public class QuorumPeerConfig {
                 throw new IllegalArgumentException("clientPortAddress is set but clientPort is not set");
             }
         } else if (clientPortAddress != null) {
-            this.clientPortAddress = new InetSocketAddress(
-                    InetAddress.getByName(clientPortAddress), clientPort);
+            this.clientPortAddress = new InetSocketAddress(InetAddress.getByName(clientPortAddress), clientPort);
             LOG.info("clientPortAddress is {}", this.clientPortAddress.toString());
         } else {
             this.clientPortAddress = new InetSocketAddress(clientPort);
@@ -391,8 +390,7 @@ public class QuorumPeerConfig {
                 throw new IllegalArgumentException("secureClientPortAddress is set but secureClientPort is not set");
             }
         } else if (secureClientPortAddress != null) {
-            this.secureClientPortAddress = new InetSocketAddress(
-                    InetAddress.getByName(secureClientPortAddress), secureClientPort);
+            this.secureClientPortAddress = new InetSocketAddress(InetAddress.getByName(secureClientPortAddress), secureClientPort);
             LOG.info("secureClientPortAddress is {}", this.secureClientPortAddress.toString());
         } else {
             this.secureClientPortAddress = new InetSocketAddress(secureClientPort);

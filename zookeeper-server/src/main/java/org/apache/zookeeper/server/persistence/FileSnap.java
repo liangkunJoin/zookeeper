@@ -67,8 +67,7 @@ public class FileSnap implements SnapShot {
      * deserialize a data tree from the most recent snapshot
      * @return the zxid of the snapshot
      */
-    public long deserialize(DataTree dt, Map<Long, Integer> sessions)
-            throws IOException {
+    public long deserialize(DataTree dt, Map<Long, Integer> sessions) throws IOException {
         // we run through 100 snapshots (not all of them)
         // if we cannot get it running within 100 snapshots
         // we should  give up
@@ -76,6 +75,7 @@ public class FileSnap implements SnapShot {
         if (snapList.size() == 0) {
             return -1L;
         }
+
         File snap = null;
         boolean foundValid = false;
         for (int i = 0, snapListSize = snapList.size(); i < snapListSize; i++) {
@@ -90,6 +90,7 @@ public class FileSnap implements SnapShot {
                 if (val != checkSum) {
                     throw new IOException("CRC corruption in snapshot :  " + snap);
                 }
+
                 foundValid = true;
                 break;
             } catch (IOException e) {
@@ -110,15 +111,13 @@ public class FileSnap implements SnapShot {
      * @param ia the input archive to restore from
      * @throws IOException
      */
-    public void deserialize(DataTree dt, Map<Long, Integer> sessions,
-            InputArchive ia) throws IOException {
+    public void deserialize(DataTree dt, Map<Long, Integer> sessions, InputArchive ia) throws IOException {
         FileHeader header = new FileHeader();
         header.deserialize(ia, "fileheader");
         if (header.getMagic() != SNAP_MAGIC) {
-            throw new IOException("mismatching magic headers "
-                    + header.getMagic() +
-                    " !=  " + FileSnap.SNAP_MAGIC);
+            throw new IOException("mismatching magic headers " + header.getMagic() + " !=  " + FileSnap.SNAP_MAGIC);
         }
+
         SerializeUtils.deserializeSnapshot(dt,ia,sessions);
     }
 

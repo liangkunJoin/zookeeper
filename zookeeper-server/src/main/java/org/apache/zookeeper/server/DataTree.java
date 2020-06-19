@@ -789,8 +789,8 @@ public class DataTree {
         return this.processTxn(header, txn, false);
     }
 
-    public ProcessTxnResult processTxn(TxnHeader header, Record txn, boolean isSubTxn)
-    {
+    public ProcessTxnResult processTxn(TxnHeader header, Record txn, boolean isSubTxn) {
+
         ProcessTxnResult rc = new ProcessTxnResult();
 
         try {
@@ -1013,25 +1013,21 @@ public class DataTree {
          * Note, such failures on DT should be seen only during
          * restore.
          */
-        if (header.getType() == OpCode.create &&
-                rc.err == Code.NODEEXISTS.intValue()) {
-            LOG.debug("Adjusting parent cversion for Txn: " + header.getType() +
-                    " path:" + rc.path + " err: " + rc.err);
+        if (header.getType() == OpCode.create && rc.err == Code.NODEEXISTS.intValue()) {
+            LOG.debug("Adjusting parent cversion for Txn: " + header.getType() + " path:" + rc.path + " err: " + rc.err);
             int lastSlash = rc.path.lastIndexOf('/');
             String parentName = rc.path.substring(0, lastSlash);
             CreateTxn cTxn = (CreateTxn)txn;
             try {
-                setCversionPzxid(parentName, cTxn.getParentCVersion(),
-                        header.getZxid());
+                setCversionPzxid(parentName, cTxn.getParentCVersion(), header.getZxid());
             } catch (KeeperException.NoNodeException e) {
-                LOG.error("Failed to set parent cversion for: " +
-                      parentName, e);
+                LOG.error("Failed to set parent cversion for: " + parentName, e);
                 rc.err = e.code().intValue();
             }
         } else if (rc.err != Code.OK.intValue()) {
-            LOG.debug("Ignoring processTxn failure hdr: " + header.getType() +
-                  " : error: " + rc.err);
+            LOG.debug("Ignoring processTxn failure hdr: " + header.getType() + " : error: " + rc.err);
         }
+
         return rc;
     }
 

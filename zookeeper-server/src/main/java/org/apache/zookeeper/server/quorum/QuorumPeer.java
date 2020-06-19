@@ -747,6 +747,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     public synchronized boolean isReconfigStateChange(){
        return reconfigFlag;
     }
+
     public synchronized ServerState getPeerState(){
         return state;
     }
@@ -902,9 +903,11 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
 
     @Override
     public synchronized void start() {
+
         if (!getView().containsKey(myid)) {
             throw new RuntimeException("My id " + myid + " not in the peer list");
          }
+
         // 加载dataTree数据
         loadDataBase();
 
@@ -923,6 +926,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
 
     private void loadDataBase() {
         try {
+
             zkDb.loadDataBase();
 
             // load the epochs
@@ -1159,9 +1163,11 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     
     @Override
     public void run() {
+
         updateThreadName();
 
         LOG.debug("Starting quorum peer");
+
         try {
             jmxQuorumBean = new QuorumBean(this);
             MBeanRegistry.getInstance().register(jmxQuorumBean, null);
@@ -1201,16 +1207,17 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                 // 本地服务状态
                 switch (getPeerState()) {
                 case LOOKING:
-                    LOG.info("LOOKING");
+
                     // 正在寻找leader
+                    LOG.info("LOOKING");
+
 
                     // 不关心只读服务
                     if (Boolean.getBoolean("readonlymode.enabled")) {
                         LOG.info("Attempting to start ReadOnlyZooKeeperServer");
 
                         // Create read-only server but don't start it immediately
-                        final ReadOnlyZooKeeperServer roZk =
-                            new ReadOnlyZooKeeperServer(logFactory, this, this.zkDb);
+                        final ReadOnlyZooKeeperServer roZk = new ReadOnlyZooKeeperServer(logFactory, this, this.zkDb);
     
                         // Instead of starting roZk immediately, wait some grace
                         // period before we decide we're partitioned.

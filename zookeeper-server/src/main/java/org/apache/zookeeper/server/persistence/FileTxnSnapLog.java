@@ -90,6 +90,7 @@ public class FileTxnSnapLog {
      * 完成日志与快照持久化目录的创建，以及是否可写权限验证
      */
     public FileTxnSnapLog(File dataDir, File snapDir) throws IOException {
+
         LOG.debug("Opening datadir:{} snapDir:{}", dataDir, snapDir);
 
         this.dataDir = new File(dataDir, version + VERSION);  // 日志持久化目录
@@ -97,25 +98,21 @@ public class FileTxnSnapLog {
 
         // by default create snap/log dirs, but otherwise complain instead
         // See ZOOKEEPER-1161 for more details
-        boolean enableAutocreate = Boolean.valueOf(
-                System.getProperty(ZOOKEEPER_DATADIR_AUTOCREATE,
-                        ZOOKEEPER_DATADIR_AUTOCREATE_DEFAULT));
+        boolean enableAutocreate = Boolean.valueOf(System.getProperty(ZOOKEEPER_DATADIR_AUTOCREATE, ZOOKEEPER_DATADIR_AUTOCREATE_DEFAULT));
 
         trustEmptySnapshot = Boolean.getBoolean(ZOOKEEPER_SNAPSHOT_TRUST_EMPTY);
+
         LOG.info(ZOOKEEPER_SNAPSHOT_TRUST_EMPTY + " : " + trustEmptySnapshot);
 
         if (!this.dataDir.exists()) {
             if (!enableAutocreate) {
-                throw new DatadirException("Missing data directory "
-                        + this.dataDir
-                        + ", automatic data directory creation is disabled ("
-                        + ZOOKEEPER_DATADIR_AUTOCREATE
+                throw new DatadirException("Missing data directory " + this.dataDir
+                        + ", automatic data directory creation is disabled (" + ZOOKEEPER_DATADIR_AUTOCREATE
                         + " is false). Please create this directory manually.");
             }
 
             if (!this.dataDir.mkdirs()) {
-                throw new DatadirException("Unable to create data directory "
-                        + this.dataDir);
+                throw new DatadirException("Unable to create data directory " + this.dataDir);
             }
         }
         if (!this.dataDir.canWrite()) {
@@ -126,16 +123,13 @@ public class FileTxnSnapLog {
             // by default create this directory, but otherwise complain instead
             // See ZOOKEEPER-1161 for more details
             if (!enableAutocreate) {
-                throw new DatadirException("Missing snap directory "
-                        + this.snapDir
-                        + ", automatic data directory creation is disabled ("
-                        + ZOOKEEPER_DATADIR_AUTOCREATE
+                throw new DatadirException("Missing snap directory " + this.snapDir
+                        + ", automatic data directory creation is disabled (" + ZOOKEEPER_DATADIR_AUTOCREATE
                         + " is false). Please create this directory manually.");
             }
 
             if (!this.snapDir.mkdirs()) {
-                throw new DatadirException("Unable to create snap directory "
-                        + this.snapDir);
+                throw new DatadirException("Unable to create snap directory " + this.snapDir);
             }
         }
         if (!this.snapDir.canWrite()) {
@@ -159,24 +153,28 @@ public class FileTxnSnapLog {
     }
 
     private void checkLogDir() throws LogDirContentCheckException {
+
         File[] files = this.dataDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return Util.isSnapshotFileName(name);
             }
         });
+
         if (files != null && files.length > 0) {
             throw new LogDirContentCheckException("Log directory has snapshot files. Check if dataLogDir and dataDir configuration is correct.");
         }
     }
 
     private void checkSnapDir() throws SnapDirContentCheckException {
+
         File[] files = this.snapDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return Util.isLogFileName(name);
             }
         });
+
         if (files != null && files.length > 0) {
             throw new SnapDirContentCheckException("Snapshot directory has log files. Check if dataLogDir and dataDir configuration is correct.");
         }
@@ -212,7 +210,9 @@ public class FileTxnSnapLog {
      * @throws IOException
      */
     public long restore(DataTree dt, Map<Long, Integer> sessions, PlayBackListener listener) throws IOException {
+
         long deserializeResult = snapLog.deserialize(dt, sessions);
+
         FileTxnLog txnLog = new FileTxnLog(dataDir);
 
         if (-1L == deserializeResult) {
@@ -250,7 +250,8 @@ public class FileTxnSnapLog {
      * @throws IOException
      */
     public long fastForwardFromEdits(DataTree dt, Map<Long, Integer> sessions, PlayBackListener listener) throws IOException {
-        TxnIterator itr = txnLog.read(dt.lastProcessedZxid+1);
+
+        TxnIterator itr = txnLog.read(dt.lastProcessedZxid + 1);
 
         long highestZxid = dt.lastProcessedZxid;
 
@@ -271,10 +272,9 @@ public class FileTxnSnapLog {
                 }
 
                 try {
-                    processTransaction(hdr,dt,sessions, itr.getTxn());
+                    processTransaction(hdr, dt, sessions, itr.getTxn());
                 } catch(KeeperException.NoNodeException e) {
-                   throw new IOException("Failed to process transaction type: " +
-                         hdr.getType() + " error: " + e.getMessage(), e);
+                   throw new IOException("Failed to process transaction type: " + hdr.getType() + " error: " + e.getMessage(), e);
                 }
 
                 listener.onTxnLoaded(hdr, itr.getTxn());

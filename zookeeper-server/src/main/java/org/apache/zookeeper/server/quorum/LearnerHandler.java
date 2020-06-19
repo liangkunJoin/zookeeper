@@ -183,6 +183,7 @@ public class LearnerHandler extends ZooKeeperThread {
     private long leaderLastZxid;
 
     LearnerHandler(Socket sock, BufferedInputStream bufferedInput, Leader leader) throws IOException {
+
         super("LearnerHandler-" + sock.getRemoteSocketAddress());
         this.sock = sock;
         this.leader = leader;
@@ -416,7 +417,7 @@ public class LearnerHandler extends ZooKeeperThread {
                   learnerType = LearnerType.OBSERVER;
             }
             // epoch 事务ID；64位组成， 高位 32位 代表届每次选举定义一个届， 地位32位 定义具体的事务id
-            // 获取foller的最大届的数
+            // 获取 follower 的最大届的数
             long lastAcceptedEpoch = ZxidUtils.getEpochFromZxid(qp.getZxid());
 
             long peerLastZxid;
@@ -424,7 +425,7 @@ public class LearnerHandler extends ZooKeeperThread {
             long zxid = qp.getZxid();
 
             // 阻塞选出当前的届的数值，过半机制
-            // 选举出最大的事务id，this.getSid取得是follower的sid（MyId）
+            // 选举出最大的事务id，this.getSid取得是follower的sid（MyId）；lastAcceptedEpoch 当前线程 follower 的最大届
             long newEpoch = leader.getEpochToPropose(this.getSid(), lastAcceptedEpoch);
             // 初始化新的事务id
             long newLeaderZxid = ZxidUtils.makeZxid(newEpoch, 0);

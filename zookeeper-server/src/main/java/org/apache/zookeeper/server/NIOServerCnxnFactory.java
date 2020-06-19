@@ -629,11 +629,11 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
     private volatile boolean stopped = true;
     private ConnectionExpirerThread expirerThread;
     private AcceptThread acceptThread;
-    private final Set<SelectorThread> selectorThreads =
-        new HashSet<SelectorThread>();
+    private final Set<SelectorThread> selectorThreads = new HashSet<SelectorThread>();
 
     @Override
     public void configure(InetSocketAddress addr, int maxcc, boolean secure) throws IOException {
+
         if (secure) {
             throw new UnsupportedOperationException("SSL isn't supported in NIOServerCnxn");
         }
@@ -730,6 +730,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         if (workerPool == null) {
             workerPool = new WorkerService("NIOWorker", numWorkerThreads, false);
         }
+
         for(SelectorThread thread : selectorThreads) {
             if (thread.getState() == Thread.State.NEW) {
                 thread.start();
