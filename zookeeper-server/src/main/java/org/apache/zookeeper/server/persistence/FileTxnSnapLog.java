@@ -214,6 +214,7 @@ public class FileTxnSnapLog {
     public long restore(DataTree dt, Map<Long, Integer> sessions, PlayBackListener listener) throws IOException {
         long deserializeResult = snapLog.deserialize(dt, sessions);
         FileTxnLog txnLog = new FileTxnLog(dataDir);
+
         if (-1L == deserializeResult) {
             /* this means that we couldn't find any snapshot, so we need to
              * initialize an empty database (reported in ZOOKEEPER-2325) */
@@ -232,6 +233,7 @@ public class FileTxnSnapLog {
             /* return a zxid of zero, since we the database is empty */
             return 0;
         }
+
         // 将还没打快照的数据重新执行事务加载数据到dataTree
         return fastForwardFromEdits(dt, sessions, listener);
     }
@@ -247,10 +249,11 @@ public class FileTxnSnapLog {
      * @return the highest zxid restored.
      * @throws IOException
      */
-    public long fastForwardFromEdits(DataTree dt, Map<Long, Integer> sessions,
-                                     PlayBackListener listener) throws IOException {
+    public long fastForwardFromEdits(DataTree dt, Map<Long, Integer> sessions, PlayBackListener listener) throws IOException {
         TxnIterator itr = txnLog.read(dt.lastProcessedZxid+1);
+
         long highestZxid = dt.lastProcessedZxid;
+
         TxnHeader hdr;
         try {
             while (true) {
@@ -262,26 +265,30 @@ public class FileTxnSnapLog {
                     return dt.lastProcessedZxid;
                 }
                 if (hdr.getZxid() < highestZxid && highestZxid != 0) {
-                    LOG.error("{}(highestZxid) > {}(next log) for type {}",
-                            highestZxid, hdr.getZxid(), hdr.getType());
+                    LOG.error("{}(highestZxid) > {}(next log) for type {}", highestZxid, hdr.getZxid(), hdr.getType());
                 } else {
                     highestZxid = hdr.getZxid();
                 }
+
                 try {
                     processTransaction(hdr,dt,sessions, itr.getTxn());
                 } catch(KeeperException.NoNodeException e) {
                    throw new IOException("Failed to process transaction type: " +
                          hdr.getType() + " error: " + e.getMessage(), e);
                 }
+
                 listener.onTxnLoaded(hdr, itr.getTxn());
-                if (!itr.next())
+
+                if (!itr.next()) {
                     break;
+                }
             }
         } finally {
             if (itr != null) {
                 itr.close();
             }
         }
+
         return highestZxid;
     }
 

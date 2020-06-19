@@ -78,6 +78,11 @@ public class QuorumMaj implements QuorumVerifier {
         half = votingMembers.size() / 2;
     }
 
+    /**
+     * 过半机制验证
+     * @param props
+     * @throws ConfigException
+     */
     public QuorumMaj(Properties props) throws ConfigException {
         for (Entry<Object, Object> entry : props.entrySet()) {
             String key = entry.getKey().toString();
@@ -88,9 +93,10 @@ public class QuorumMaj implements QuorumVerifier {
                 long sid = Long.parseLong(key.substring(dot + 1));
                 QuorumServer qs = new QuorumServer(sid, value);
                 allMembers.put(Long.valueOf(sid), qs);
-                if (qs.type == LearnerType.PARTICIPANT)
+                // participant 参与者
+                if (qs.type == LearnerType.PARTICIPANT) {
                     votingMembers.put(Long.valueOf(sid), qs);
-                else {
+                } else {
                     observingMembers.put(Long.valueOf(sid), qs);
                 }
             } else if (key.equals("version")) {

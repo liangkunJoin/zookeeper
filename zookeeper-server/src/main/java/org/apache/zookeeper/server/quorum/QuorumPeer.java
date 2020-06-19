@@ -661,6 +661,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
      */
     @Deprecated
     class ResponderThread extends ZooKeeperThread {
+
         ResponderThread() {
             super("ResponderThread");
         }

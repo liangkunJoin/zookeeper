@@ -25,6 +25,6 @@ public interface Info {
     int MINOR=5;
     int MICRO=6;
     String QUALIFIER=null;
-    String REVISION_HASH="168f47faadfe078711edaf407bb7cbccabaeef91";
-    String BUILD_DATE="06/17/2020 05:53 GMT";
+    String REVISION_HASH="bc3c54e822892f2b292645306e093b425f219538";
+    String BUILD_DATE="06/18/2020 12:58 GMT";
 }

@@ -422,7 +422,8 @@ public class Learner {
 
         // 发送包到 bufferedOutput（与leader节点建立的长连接）
         writePacket(qp, true);
-        // 获取leader节点返回的信息包
+
+        // 获取leader节点返回的信息包，主要是届+事务id
         readPacket(qp);
 
         // 当前leader执行的最大事务ID
@@ -436,6 +437,7 @@ public class Learner {
 
         	if (newEpoch > self.getAcceptedEpoch()) {
         		wrappedEpochBytes.putInt((int)self.getCurrentEpoch());
+        		// 设置当前届
         		self.setAcceptedEpoch(newEpoch);
         	} else if (newEpoch == self.getAcceptedEpoch()) {
         		// since we have already acked an epoch equal to the leaders, we cannot ack
@@ -486,10 +488,12 @@ public class Learner {
         LinkedList<PacketInFlight> packetsNotCommitted = new LinkedList<PacketInFlight>();
         synchronized (zk) {
             if (qp.getType() == Leader.DIFF) {
+                // 客户端的事务id（peerLastZxid）等于leader节点文件存储的事务id
                 LOG.info("Getting a diff from the leader 0x{}", Long.toHexString(qp.getZxid()));
                 snapshotNeeded = false;
             }
             else if (qp.getType() == Leader.SNAP) {
+                // leader的快照
                 LOG.info("Getting a snapshot from leader 0x" + Long.toHexString(qp.getZxid()));
                 // The leader is going to dump the database
                 // db is clear as part of deserializeSnapshot()
@@ -508,6 +512,7 @@ public class Learner {
                 }
                 zk.getZKDatabase().setlastProcessedZxid(qp.getZxid());
             } else if (qp.getType() == Leader.TRUNC) {
+                // 客户端的事务id（peerLastZxid）大于leader节点文件存储的事务id，要删除
                 //we need to truncate the log to the lastzxid of the leader
                 LOG.warn("Truncating log to get in sync with the leader 0x" + Long.toHexString(qp.getZxid()));
                 boolean truncated=zk.getZKDatabase().truncateLog(qp.getZxid());
@@ -546,10 +551,7 @@ public class Learner {
                     pif.hdr = new TxnHeader();
                     pif.rec = SerializeUtils.deserializeTxn(qp.getData(), pif.hdr);
                     if (pif.hdr.getZxid() != lastQueued + 1) {
-                    LOG.warn("Got zxid 0x"
-                            + Long.toHexString(pif.hdr.getZxid())
-                            + " expected 0x"
-                            + Long.toHexString(lastQueued + 1));
+                    LOG.warn("Got zxid 0x" + Long.toHexString(pif.hdr.getZxid()) + " expected 0x" + Long.toHexString(lastQueued + 1));
                     }
                     lastQueued = pif.hdr.getZxid();
                     
@@ -602,10 +604,7 @@ public class Learner {
                         packet.rec = SerializeUtils.deserializeTxn(qp.getData(), packet.hdr);
                         // Log warning message if txn comes out-of-order
                         if (packet.hdr.getZxid() != lastQueued + 1) {
-                            LOG.warn("Got zxid 0x"
-                                    + Long.toHexString(packet.hdr.getZxid())
-                                    + " expected 0x"
-                                    + Long.toHexString(lastQueued + 1));
+                            LOG.warn("Got zxid 0x" + Long.toHexString(packet.hdr.getZxid()) + " expected 0x" + Long.toHexString(lastQueued + 1));
                         }
                         lastQueued = packet.hdr.getZxid();
                     }

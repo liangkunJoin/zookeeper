@@ -1169,6 +1169,7 @@ public class Leader {
                 QuorumPacket qp = new QuorumPacket(Leader.COMMIT, p.packet.getZxid(), null, null);
                 handler.queuePacket(qp);
             }
+
             // Only participant need to get outstanding proposals
             if (handler.getLearnerType() == LearnerType.PARTICIPANT) {
                 List<Long>zxids = new ArrayList<Long>(outstandingProposals.keySet());
@@ -1195,21 +1196,30 @@ public class Leader {
     public long getEpochToPropose(long sid, long lastAcceptedEpoch) throws InterruptedException, IOException {
 
         synchronized(connectingFollowers) {
+
             if (!waitingForNewEpoch) {
                 return epoch;
             }
 
+            // 获取最大届并且 +1 作为follower的下一届数字
             if (lastAcceptedEpoch >= epoch) {
                 epoch = lastAcceptedEpoch + 1;
             }
 
+            // 是否是参与者
             if (isParticipant(sid)) {
                 connectingFollowers.add(sid);
             }
 
+            // 验证机制
+            // 1、leader节点是否包含在 connectingFollowers 中
+            // 2、当加入 connectingFollowers 数量大于集群（除observer节点）的一般 唤醒所有持有锁的线程
+            // 3、当加入 connectingFollowers 数量不大于集群（除observer节点）的一般 直接wait加入的follower线程
             QuorumVerifier verifier = self.getQuorumVerifier();
             if (connectingFollowers.contains(self.getId()) && verifier.containsQuorum(connectingFollowers)) {
+                // 设置等待新的届为flease
                 waitingForNewEpoch = false;
+                // 设置届的值
                 self.setAcceptedEpoch(epoch);
                 connectingFollowers.notifyAll();
             } else {
@@ -1235,7 +1245,9 @@ public class Leader {
     protected boolean electionFinished = false;
 
     public void waitForEpochAck(long id, StateSummary ss) throws IOException, InterruptedException {
+
         synchronized(electingFollowers) {
+
             if (electionFinished) {
                 return;
             }
@@ -1251,6 +1263,10 @@ public class Leader {
                 }
             }
 
+            // 验证机制
+            // 1、leader节点是否包含在 electingFollowers 中
+            // 2、当加入 electingFollowers 数量大于集群（除observer节点）的一般 唤醒所有持有锁的线程
+            // 3、当加入 electingFollowers 数量不大于集群（除observer节点）的一般 直接wait加入的follower线程
             QuorumVerifier verifier = self.getQuorumVerifier();
             if (electingFollowers.contains(self.getId()) && verifier.containsQuorum(electingFollowers)) {
                 electionFinished = true;
