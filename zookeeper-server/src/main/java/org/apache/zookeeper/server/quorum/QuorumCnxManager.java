@@ -122,8 +122,7 @@ public class QuorumCnxManager {
     final Map<Long, QuorumPeer.QuorumServer> view;
     final boolean listenOnAllIPs;
     private ThreadPoolExecutor connectionExecutor;
-    private final Set<Long> inprogressConnections = Collections
-            .synchronizedSet(new HashSet<Long>());
+    private final Set<Long> inprogressConnections = Collections.synchronizedSet(new HashSet<Long>());
     private QuorumAuthServer authServer;
     private QuorumAuthLearner authLearner;
     private boolean quorumSaslAuthEnabled;
@@ -137,6 +136,10 @@ public class QuorumCnxManager {
      */
     final ConcurrentHashMap<Long, SendWorker> senderWorkerMap;  // 每台服务对应的senderworker
     final ConcurrentHashMap<Long, ArrayBlockingQueue<ByteBuffer>> queueSendMap; // 需要发送给每台服务的消息队列
+
+    /**
+     * 
+     */
     final ConcurrentHashMap<Long, ByteBuffer> lastMessageSent; // 发送给每台服务的最新消息
 
     /*

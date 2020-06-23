@@ -37,9 +37,9 @@ public class Vote {
                     long zxid,
                     long peerEpoch) {
         this.version = 0x0;
-        this.id = id;
+        this.id = id;  // myid
         this.zxid = zxid;
-        this.electionEpoch = -1;
+        this.electionEpoch = -1;  // 当前选举届
         this.peerEpoch = peerEpoch;
         this.state = ServerState.LOOKING;
     }
