@@ -1523,10 +1523,10 @@ public class ClientCnxn {
         return submitRequest(h, request, response, watchRegistration, null);
     }
 
-    public ReplyHeader submitRequest(RequestHeader h, Record request, Record response, WatchRegistration watchRegistration, WatchDeregistration watchDeregistration) throws InterruptedException {
+    public ReplyHeader submitRequest(RequestHeader h, Record request, Record response,
+                                     WatchRegistration watchRegistration, WatchDeregistration watchDeregistration) throws InterruptedException {
         ReplyHeader r = new ReplyHeader();
-        Packet packet = queuePacket(h, r, request, response, null, null, null,
-                null, watchRegistration, watchDeregistration);
+        Packet packet = queuePacket(h, r, request, response, null, null, null, null, watchRegistration, watchDeregistration);
         synchronized (packet) {
             if (requestTimeout > 0) {
                 // Wait for request completion with timeout
@@ -1585,7 +1585,9 @@ public class ClientCnxn {
         return queuePacket(h, r, request, response, cb, clientPath, serverPath, ctx, watchRegistration, null);
     }
 
-    public Packet queuePacket(RequestHeader h, ReplyHeader r, Record request, Record response, AsyncCallback cb, String clientPath, String serverPath, Object ctx, WatchRegistration watchRegistration, WatchDeregistration watchDeregistration) {
+    public Packet queuePacket(RequestHeader h, ReplyHeader r, Record request, Record response,
+                              AsyncCallback cb, String clientPath, String serverPath, Object ctx,
+                              WatchRegistration watchRegistration, WatchDeregistration watchDeregistration) {
 
         Packet packet = null;
 

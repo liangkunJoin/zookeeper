@@ -457,8 +457,7 @@ public class ZKDatabase {
      * @return
      * @throws KeeperException.NoNodeException
      */
-    public byte[] getData(String path, Stat stat, Watcher watcher)
-    throws KeeperException.NoNodeException {
+    public byte[] getData(String path, Stat stat, Watcher watcher) throws KeeperException.NoNodeException {
         return dataTree.getData(path, stat, watcher);
     }
 
@@ -588,7 +587,10 @@ public class ZKDatabase {
     }
 
     public synchronized void initConfigInZKDatabase(QuorumVerifier qv) {
-        if (qv == null) return; // only happens during tests
+        if (qv == null) {
+            return; // only happens during tests
+        }
+
         try {
             if (this.dataTree.getNode(ZooDefs.CONFIG_NODE) == null) {
                 // should only happen during upgrade

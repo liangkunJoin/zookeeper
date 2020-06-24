@@ -491,8 +491,7 @@ public class Learner {
                 // 客户端的事务id（peerLastZxid）等于leader节点文件存储的事务id
                 LOG.info("Getting a diff from the leader 0x{}", Long.toHexString(qp.getZxid()));
                 snapshotNeeded = false;
-            }
-            else if (qp.getType() == Leader.SNAP) {
+            } else if (qp.getType() == Leader.SNAP) {
                 // leader的快照
                 LOG.info("Getting a snapshot from leader 0x" + Long.toHexString(qp.getZxid()));
                 // The leader is going to dump the database
@@ -523,8 +522,7 @@ public class Learner {
                 }
                 zk.getZKDatabase().setlastProcessedZxid(qp.getZxid());
 
-            }
-            else {
+            } else {
                 LOG.error("Got unexpected packet from leader: {}, exiting ... ", LearnerHandler.packetToString(qp));
                 System.exit(13);
 
