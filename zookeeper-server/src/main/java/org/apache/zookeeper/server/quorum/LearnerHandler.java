@@ -93,8 +93,7 @@ public class LearnerHandler extends ZooKeeperThread {
     /**
      * The packets to be sent to the learner
      */
-    final LinkedBlockingQueue<QuorumPacket> queuedPackets =
-        new LinkedBlockingQueue<QuorumPacket>();
+    final LinkedBlockingQueue<QuorumPacket> queuedPackets = new LinkedBlockingQueue<QuorumPacket>();
 
     /**
      * This class controls the time that the Leader has been
@@ -499,8 +498,7 @@ public class LearnerHandler extends ZooKeeperThread {
                 QuorumPacket newLeaderQP = new QuorumPacket(Leader.NEWLEADER, newLeaderZxid, null, null);
                 oa.writeRecord(newLeaderQP, "packet");
             } else {
-                QuorumPacket newLeaderQP = new QuorumPacket(Leader.NEWLEADER, newLeaderZxid,
-                        leader.self.getLastSeenQuorumVerifier().toString().getBytes(), null);
+                QuorumPacket newLeaderQP = new QuorumPacket(Leader.NEWLEADER, newLeaderZxid, leader.self.getLastSeenQuorumVerifier().toString().getBytes(), null);
                 queuedPackets.add(newLeaderQP);
             }
             bufferedOutput.flush();
@@ -661,8 +659,7 @@ public class LearnerHandler extends ZooKeeperThread {
             // Start sending packets
             new Thread() {
                 public void run() {
-                    Thread.currentThread().setName(
-                            "Sender-" + sock.getRemoteSocketAddress());
+                    Thread.currentThread().setName("Sender-" + sock.getRemoteSocketAddress());
                     try {
                         sendPackets();
                     } catch (InterruptedException e) {
@@ -684,6 +681,11 @@ public class LearnerHandler extends ZooKeeperThread {
      * @param db
      * @param leader
      * @return true if snapshot transfer is needed.
+     *
+     *
+     * ZKDatabase 会维护一个长度为500的 committedLog 的list ，作为缓冲区
+     * 长度一定，比这个小的在 txnlog 事务日志文件中，但是日志文件包含缓冲区的数据
+     *
      */
     public boolean syncFollower(long peerLastZxid, ZKDatabase db, Leader leader) {
         /*
@@ -757,6 +759,7 @@ public class LearnerHandler extends ZooKeeperThread {
             } else if (lastProcessedZxid == peerLastZxid) {
                 // Follower is already sync with us, send empty diff
                 // 客户端的事务id（peerLastZxid）等于leader节点文件存储的事务id（lastProcessedZxid）
+                // 这种情况，就是 Follower 少了一部分数据，直接同步 Leader 即可
                 LOG.info("Sending DIFF zxid=0x" + Long.toHexString(peerLastZxid) + " for peer sid: " +  getSid());
                 queueOpPacket(Leader.DIFF, peerLastZxid);
                 needOpPacket = false;
@@ -764,6 +767,7 @@ public class LearnerHandler extends ZooKeeperThread {
             } else if (peerLastZxid > maxCommittedLog && !isPeerNewEpochZxid) {
                 // Newer than committedLog, send trunc and done
                 // 客户端的事务id大于leader节点文件存储的最大事务id，以leader节点为主
+                // Follower 的数据比 Leader 多，但是一切要以 Leader 为准，这就需要回滚。多余的数据删除掉。
                 LOG.debug("Sending TRUNC to follower zxidToSend=0x" + Long.toHexString(maxCommittedLog) + " for peer sid:" +  getSid());
                 queueOpPacket(Leader.TRUNC, maxCommittedLog);
                 currentZxid = maxCommittedLog;
@@ -774,22 +778,24 @@ public class LearnerHandler extends ZooKeeperThread {
                 // 客户端的事务id小于leader节点文件存储的最大事务id，并且大于leader节点最小的事务Id
                 LOG.info("Using committedLog for peer sid: " +  getSid());
                 Iterator<Proposal> itr = db.getCommittedLog().iterator();
-                // 从commit中获取还没有同步到follower的数据
+                // 从缓存队列中中获取还没有同步到follower的数据
                 currentZxid = queueCommittedProposals(itr, peerLastZxid, null, maxCommittedLog);
                 needSnap = false;
             } else if (peerLastZxid < minCommittedLog && txnLogSyncEnabled) {
                 // Use txnlog and committedLog to sync
-
+                // 这时 Follower 已经无法依赖缓存队列的数据进行同步，因为它缺少的不仅仅是增量的数据，这时只能全量同步了。
                 // Calculate sizeLimit that we allow to retrieve txnlog from disk
                 long sizeLimit = db.calculateTxnLogSizeLimit();
                 // This method can return empty iterator if the requested zxid is older than on-disk txnlog
+                // 从事务日志获取数据
                 Iterator<Proposal> txnLogItr = db.getProposalsFromTxnLog(peerLastZxid, sizeLimit);
                 if (txnLogItr.hasNext()) {
                     LOG.info("Use txnlog and committedLog for peer sid: " +  getSid());
+                    // 从事务日志中查询的数据，同步到follower中，不包含队列中的数据
                     currentZxid = queueCommittedProposals(txnLogItr, peerLastZxid, minCommittedLog, maxCommittedLog);
-
                     LOG.debug("Queueing committedLog 0x" + Long.toHexString(currentZxid));
                     Iterator<Proposal> committedLogItr = db.getCommittedLog().iterator();
+                    // 从缓存队列中的数据同步给follower
                     currentZxid = queueCommittedProposals(committedLogItr, currentZxid, null, maxCommittedLog);
                     needSnap = false;
                 }
@@ -803,6 +809,7 @@ public class LearnerHandler extends ZooKeeperThread {
             } else {
                 LOG.warn("Unhandled scenario for peer sid: " +  getSid());
             }
+
             LOG.debug("Start forwarding 0x" + Long.toHexString(currentZxid) + " for peer sid: " +  getSid());
             leaderLastZxid = leader.startForwarding(this, currentZxid);
         } finally {
@@ -898,6 +905,8 @@ public class LearnerHandler extends ZooKeeperThread {
 
             // Since this is already a committed proposal, we need to follow
             // it by a commit packet
+
+            // [diff ]
             queuePacket(propose.packet);
             queueOpPacket(Leader.COMMIT, packetZxid);
             queuedZxid = packetZxid;

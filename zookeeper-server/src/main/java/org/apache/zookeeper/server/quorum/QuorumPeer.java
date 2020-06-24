@@ -1638,15 +1638,16 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         synchronized (outerLockObject) {
             synchronized (QV_LOCK) {
                 if (lastSeenQuorumVerifier != null && lastSeenQuorumVerifier.getVersion() > qv.getVersion()) {
-                    LOG.error("setLastSeenQuorumVerifier called with stale config " + qv.getVersion() +
-                            ". Current version: " + quorumVerifier.getVersion());
+                    LOG.error("setLastSeenQuorumVerifier called with stale config "
+                            + qv.getVersion() + ". Current version: " + quorumVerifier.getVersion());
                 }
+
                 // assuming that a version uniquely identifies a configuration, so if
                 // version is the same, nothing to do here.
-                if (lastSeenQuorumVerifier != null &&
-                        lastSeenQuorumVerifier.getVersion() == qv.getVersion()) {
+                if (lastSeenQuorumVerifier != null && lastSeenQuorumVerifier.getVersion() == qv.getVersion()) {
                     return;
                 }
+
                 lastSeenQuorumVerifier = qv;
                 if (qcm != null) {
                     connectNewPeers(qcm);

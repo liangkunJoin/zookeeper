@@ -265,6 +265,7 @@ public class FileTxnSnapLog {
                     //empty logs
                     return dt.lastProcessedZxid;
                 }
+
                 if (hdr.getZxid() < highestZxid && highestZxid != 0) {
                     LOG.error("{}(highestZxid) > {}(next log) for type {}", highestZxid, hdr.getZxid(), hdr.getType());
                 } else {

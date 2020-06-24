@@ -552,8 +552,7 @@ public class FileTxnLog implements TxnLog {
          *        a given zxid
          * @throws IOException
          */
-        public FileTxnIterator(File logDir, long zxid, boolean fastForward)
-                throws IOException {
+        public FileTxnIterator(File logDir, long zxid, boolean fastForward) throws IOException {
             this.logDir = logDir;
             this.zxid = zxid;
             init();

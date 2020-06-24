@@ -222,9 +222,11 @@ public class ZKDatabase {
     }
 
     private final PlayBackListener commitProposalPlaybackListener = new PlayBackListener() {
+
         public void onTxnLoaded(TxnHeader hdr, Record txn){
             addCommittedProposal(hdr, txn);
         }
+
     };
 
     /**
