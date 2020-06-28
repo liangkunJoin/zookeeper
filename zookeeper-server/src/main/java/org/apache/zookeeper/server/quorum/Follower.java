@@ -41,7 +41,7 @@ public class Follower extends Learner{
     // This is the same object as this.zk, but we cache the downcast op
     final FollowerZooKeeperServer fzk;
     
-    Follower(QuorumPeer self,FollowerZooKeeperServer zk) {
+    Follower(QuorumPeer self, FollowerZooKeeperServer zk) {
         this.self = self;
         this.zk=zk;
         this.fzk = zk;
@@ -157,8 +157,7 @@ public class Follower extends Learner{
            // get new designated leader from (current) leader's message
            ByteBuffer buffer = ByteBuffer.wrap(qp.getData());    
            long suggestedLeaderId = buffer.getLong();
-            boolean majorChange = 
-                   self.processReconfig(qv, suggestedLeaderId, qp.getZxid(), true);
+            boolean majorChange = self.processReconfig(qv, suggestedLeaderId, qp.getZxid(), true);
            // commit (writes the new config to ZK tree (/zookeeper/config)                     
            fzk.commit(qp.getZxid());
             if (majorChange) {

@@ -222,9 +222,7 @@ public class CommitProcessor extends ZooKeeperCriticalThread implements
              * properly.
              */
             Request pending = nextPending.get();
-            if (pending != null &&
-                pending.sessionId == request.sessionId &&
-                pending.cxid == request.cxid) {
+            if (pending != null && pending.sessionId == request.sessionId && pending.cxid == request.cxid) {
                 // we want to send our version of the request.
                 // the pointer to the connection in the request
                 pending.setHdr(request.getHdr());

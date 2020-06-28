@@ -291,8 +291,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
                 }
                 SelectorThread selectorThread = selectorIterator.next();
                 if (!selectorThread.addAcceptedConnection(sc)) {
-                    throw new IOException(
-                        "Unable to add connection to selector queue" + (stopped ? " (shutdown in progress)" : ""));
+                    throw new IOException("Unable to add connection to selector queue" + (stopped ? " (shutdown in progress)" : ""));
                 }
                 acceptErrorLogger.flush();
             } catch (IOException e) {
@@ -690,8 +689,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
             try {
                 acceptThread.join();
             } catch (InterruptedException e) {
-                LOG.error("Error joining old acceptThread when reconfiguring client port {}",
-                            e.getMessage());
+                LOG.error("Error joining old acceptThread when reconfiguring client port {}", e.getMessage());
                 Thread.currentThread().interrupt();
             }
             this.ss = ServerSocketChannel.open();
