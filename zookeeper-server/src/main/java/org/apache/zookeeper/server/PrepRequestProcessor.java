@@ -88,6 +88,21 @@ import java.util.concurrent.LinkedBlockingQueue;
  * outstandingRequests, so that it can take into account transactions that are
  * in the queue to be applied when generating a transaction.
  */
+
+/**
+ *         // 预先处理请求，处理请求过来的数据
+ *         // 1、将Request添加到submittedRequests队列中
+ *         // 2、线程不停的从submittedRequests获取请求
+ *         // 3、根据请求的类型不同的处理，以create为例
+ *         // 4、获取父节点信息
+ *         // 5、校验ACL
+ *         // 6、临时节点与顺序节点逻辑
+ *         // 7、生成txn事务
+ *         // 8、生成父节点修改记录
+ *         // 9、生成新增节点修改记录
+ *         // 10、将修改记录加入到outstandingChanges队列中
+ *         // 11、调用nextProcessor.processRequest(request)
+ */
 public class PrepRequestProcessor extends ZooKeeperCriticalThread implements RequestProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(PrepRequestProcessor.class);
 
@@ -124,6 +139,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
     public static void setFailCreate(boolean b) {
         failCreate = b;
     }
+
     @Override
     public void run() {
         try {
@@ -960,8 +976,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
                 // authenticated ids of the requestor
                 boolean authIdValid = false;
                 for (Id cid : authInfo) {
-                    AuthenticationProvider ap =
-                        ProviderRegistry.getProvider(cid.getScheme());
+                    AuthenticationProvider ap = ProviderRegistry.getProvider(cid.getScheme());
                     if (ap == null) {
                         LOG.error("Missing AuthenticationProvider for "
                             + cid.getScheme());

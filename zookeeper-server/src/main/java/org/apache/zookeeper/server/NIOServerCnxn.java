@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
  * client, but only one thread doing the communication.
  */
 public class NIOServerCnxn extends ServerCnxn {
+
     private static final Logger LOG = LoggerFactory.getLogger(NIOServerCnxn.class);
 
     private final NIOServerCnxnFactory factory;
@@ -72,8 +73,7 @@ public class NIOServerCnxn extends ServerCnxn {
 
     private ByteBuffer incomingBuffer = lenBuffer;
 
-    private final Queue<ByteBuffer> outgoingBuffers =
-        new LinkedBlockingQueue<ByteBuffer>();
+    private final Queue<ByteBuffer> outgoingBuffers = new LinkedBlockingQueue<ByteBuffer>();
 
     private int sessionTimeout;
 
@@ -248,8 +248,7 @@ public class NIOServerCnxn extends ServerCnxn {
                      * small to hold everything, nothing will be copied,
                      * so we've got to slice the buffer if it's too big.
                      */
-                    b = (ByteBuffer) b.slice().limit(
-                            directBuffer.remaining());
+                    b = (ByteBuffer) b.slice().limit(directBuffer.remaining());
                 }
                 /*
                  * put() is going to modify the positions of both

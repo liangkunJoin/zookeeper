@@ -61,8 +61,7 @@ public class ContainerManager {
         this.maxPerMinute = maxPerMinute;
         timer = new Timer("ContainerManagerTask", true);
 
-        LOG.info(String.format("Using checkIntervalMs=%d maxPerMinute=%d",
-                checkIntervalMs, maxPerMinute));
+        LOG.info(String.format("Using checkIntervalMs=%d maxPerMinute=%d", checkIntervalMs, maxPerMinute));
     }
 
     /**
@@ -86,8 +85,7 @@ public class ContainerManager {
                 }
             };
             if (task.compareAndSet(null, timerTask)) {
-                timer.scheduleAtFixedRate(timerTask, checkIntervalMs,
-                        checkIntervalMs);
+                timer.scheduleAtFixedRate(timerTask, checkIntervalMs, checkIntervalMs);
             }
         }
     }
@@ -116,12 +114,10 @@ public class ContainerManager {
             Request request = new Request(null, 0, 0,
                     ZooDefs.OpCode.deleteContainer, path, null);
             try {
-                LOG.info("Attempting to delete candidate container: {}",
-                        containerPath);
+                LOG.info("Attempting to delete candidate container: {}", containerPath);
                 requestProcessor.processRequest(request);
             } catch (Exception e) {
-                LOG.error("Could not delete container: {}",
-                        containerPath, e);
+                LOG.error("Could not delete container: {}", containerPath, e);
             }
 
             long elapsedMs = Time.currentElapsedTime() - startMs;

@@ -80,6 +80,7 @@ import org.slf4j.LoggerFactory;
  * PrepRequestProcessor -> SyncRequestProcessor -> FinalRequestProcessor
  */
 public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
+
     protected static final Logger LOG;
 
     static {
@@ -487,8 +488,8 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         // 7、生成txn事务
         // 8、生成父节点修改记录
         // 9、生成新增节点修改记录
-        // 10、将
-        //
+        // 10、将修改记录加入到outstandingChanges队列中
+        // 11、调用nextProcessor.processRequest(request)
         //
         firstProcessor = new PrepRequestProcessor(this, syncProcessor);
         ((PrepRequestProcessor)firstProcessor).start();
@@ -1242,9 +1243,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
                 request.request.rewind();
                 sessionTracker.addSession(request.sessionId, timeout);
             } else {
-                LOG.warn("*****>>>>> Got "
-                        + txn.getClass() + " "
-                        + txn.toString());
+                LOG.warn("*****>>>>> Got " + txn.getClass() + " " + txn.toString());
             }
         } else if (opCode == OpCode.closeSession) {
             sessionTracker.removeSession(sessionId);

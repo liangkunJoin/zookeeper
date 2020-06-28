@@ -330,29 +330,29 @@ public class FileTxnSnapLog {
     public void processTransaction(TxnHeader hdr,DataTree dt, Map<Long, Integer> sessions, Record txn) throws KeeperException.NoNodeException {
         ProcessTxnResult rc;
         switch (hdr.getType()) {
-        case OpCode.createSession:
-            sessions.put(hdr.getClientId(), ((CreateSessionTxn) txn).getTimeOut());
-            if (LOG.isTraceEnabled()) {
-                ZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,
-                        "playLog --- create session in log: 0x"
-                                + Long.toHexString(hdr.getClientId())
-                                + " with timeout: "
-                                + ((CreateSessionTxn) txn).getTimeOut());
-            }
-            // give dataTree a chance to sync its lastProcessedZxid
-            rc = dt.processTxn(hdr, txn);
-            break;
-        case OpCode.closeSession:
-            sessions.remove(hdr.getClientId());
-            if (LOG.isTraceEnabled()) {
-                ZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,
-                        "playLog --- close session in log: 0x"
-                                + Long.toHexString(hdr.getClientId()));
-            }
-            rc = dt.processTxn(hdr, txn);
-            break;
-        default:
-            rc = dt.processTxn(hdr, txn);
+            case OpCode.createSession:
+                sessions.put(hdr.getClientId(), ((CreateSessionTxn) txn).getTimeOut());
+                if (LOG.isTraceEnabled()) {
+                    ZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,
+                            "playLog --- create session in log: 0x"
+                                    + Long.toHexString(hdr.getClientId())
+                                    + " with timeout: "
+                                    + ((CreateSessionTxn) txn).getTimeOut());
+                }
+                // give dataTree a chance to sync its lastProcessedZxid
+                rc = dt.processTxn(hdr, txn);
+                break;
+            case OpCode.closeSession:
+                sessions.remove(hdr.getClientId());
+                if (LOG.isTraceEnabled()) {
+                    ZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,
+                            "playLog --- close session in log: 0x"
+                                    + Long.toHexString(hdr.getClientId()));
+                }
+                rc = dt.processTxn(hdr, txn);
+                break;
+            default:
+                rc = dt.processTxn(hdr, txn);
         }
 
         /**

@@ -44,6 +44,15 @@ import org.slf4j.LoggerFactory;
  *             be null. This change the semantic of txnlog on the observer
  *             since it only contains committed txns.
  */
+
+/**
+ *         // 数据持久化，create
+ *         // 1、processRequest方法将Request添加到queuedRequests队列中
+ *         // 2、负责从queuedRequests队列中获取Request
+ *         // 3、负责将txn同步到磁盘，并且进行快照
+ *         // 4、如果同步完成了就会调用nextProcessor.processRequest(si)
+ *
+ */
 public class SyncRequestProcessor extends ZooKeeperCriticalThread implements RequestProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(SyncRequestProcessor.class);

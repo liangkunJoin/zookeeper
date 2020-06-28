@@ -185,10 +185,8 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
                 Set<SelectorThread> selectorThreads) throws IOException {
             super("NIOServerCxnFactory.AcceptThread:" + addr);
             this.acceptSocket = ss;
-            this.acceptKey =
-                acceptSocket.register(selector, SelectionKey.OP_ACCEPT);
-            this.selectorThreads = Collections.unmodifiableList(
-                new ArrayList<SelectorThread>(selectorThreads));
+            this.acceptKey = acceptSocket.register(selector, SelectionKey.OP_ACCEPT);
+            this.selectorThreads = Collections.unmodifiableList(new ArrayList<SelectorThread>(selectorThreads));
             selectorIterator = this.selectorThreads.iterator();
         }
 
@@ -222,8 +220,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
             try {
                 selector.select();
 
-                Iterator<SelectionKey> selectedKeys =
-                    selector.selectedKeys().iterator();
+                Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
                 while (!stopped && selectedKeys.hasNext()) {
                     SelectionKey key = selectedKeys.next();
                     selectedKeys.remove();
@@ -240,8 +237,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
                             pauseAccept(10);
                         }
                     } else {
-                        LOG.warn("Unexpected ops in accept select "
-                                 + key.readyOps());
+                        LOG.warn("Unexpected ops in accept select " + key.readyOps());
                     }
                 }
             } catch (IOException e) {
@@ -283,12 +279,10 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
                 int cnxncount = getClientCnxnCount(ia);
 
                 if (maxClientCnxns > 0 && cnxncount >= maxClientCnxns){
-                    throw new IOException("Too many connections from " + ia
-                                          + " - max is " + maxClientCnxns );
+                    throw new IOException("Too many connections from " + ia + " - max is " + maxClientCnxns );
                 }
 
-                LOG.debug("Accepted socket connection from "
-                         + sc.socket().getRemoteSocketAddress());
+                LOG.debug("Accepted socket connection from " + sc.socket().getRemoteSocketAddress());
                 sc.configureBlocking(false);
 
                 // Round-robin assign this connection to a selector thread
@@ -298,14 +292,12 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
                 SelectorThread selectorThread = selectorIterator.next();
                 if (!selectorThread.addAcceptedConnection(sc)) {
                     throw new IOException(
-                        "Unable to add connection to selector queue"
-                        + (stopped ? " (shutdown in progress)" : ""));
+                        "Unable to add connection to selector queue" + (stopped ? " (shutdown in progress)" : ""));
                 }
                 acceptErrorLogger.flush();
             } catch (IOException e) {
                 // accept, maxClientCnxns, configureBlocking
-                acceptErrorLogger.rateLimitLog(
-                    "Error accepting new connection: " + e.getMessage());
+                acceptErrorLogger.rateLimitLog("Error accepting new connection: " + e.getMessage());
                 fastCloseSock(sc);
             }
             return accepted;
@@ -637,6 +629,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         if (secure) {
             throw new UnsupportedOperationException("SSL isn't supported in NIOServerCnxn");
         }
+
         configureSaslLogin();
 
         maxClientCnxns = maxcc;

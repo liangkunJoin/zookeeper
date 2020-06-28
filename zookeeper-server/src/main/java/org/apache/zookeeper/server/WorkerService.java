@@ -137,6 +137,7 @@ public class WorkerService {
     }
 
     private class ScheduledWorkRequest implements Runnable {
+
         private final WorkRequest workRequest;
 
         ScheduledWorkRequest(WorkRequest workRequest) {

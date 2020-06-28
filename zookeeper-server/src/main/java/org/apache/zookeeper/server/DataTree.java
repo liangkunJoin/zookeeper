@@ -83,8 +83,7 @@ public class DataTree {
      * This hashtable provides a fast lookup to the datanodes. The tree is the
      * source of truth and is where all the locking occurs
      */
-    private final ConcurrentHashMap<String, DataNode> nodes =
-        new ConcurrentHashMap<String, DataNode>();
+    private final ConcurrentHashMap<String, DataNode> nodes = new ConcurrentHashMap<String, DataNode>();
 
     private final WatchManager dataWatches = new WatchManager();
 
@@ -497,8 +496,7 @@ public class DataTree {
                 pTrie.addPath(parentName.substring(quotaZookeeper.length()));
             }
             if (Quotas.statNode.equals(childName)) {
-                updateQuotaForPath(parentName
-                        .substring(quotaZookeeper.length()));
+                updateQuotaForPath(parentName.substring(quotaZookeeper.length()));
             }
         }
         // also check to update the quotas for this node
@@ -509,8 +507,7 @@ public class DataTree {
             updateBytes(lastPrefix, data == null ? 0 : data.length);
         }
         dataWatches.triggerWatch(path, Event.EventType.NodeCreated);
-        childWatches.triggerWatch(parentName.equals("") ? "/" : parentName,
-                Event.EventType.NodeChildrenChanged);
+        childWatches.triggerWatch(parentName.equals("") ? "/" : parentName, Event.EventType.NodeChildrenChanged);
     }
 
     /**
@@ -1413,15 +1410,18 @@ public class DataTree {
       * @throws KeeperException.NoNodeException
       *     If znode not found.
       **/
-    public void setCversionPzxid(String path, int newCversion, long zxid)
-        throws KeeperException.NoNodeException {
+    public void setCversionPzxid(String path, int newCversion, long zxid) throws KeeperException.NoNodeException {
+
         if (path.endsWith("/")) {
            path = path.substring(0, path.length() - 1);
         }
+
         DataNode node = nodes.get(path);
+
         if (node == null) {
             throw new KeeperException.NoNodeException(path);
         }
+
         synchronized (node) {
             if(newCversion == -1) {
                 newCversion = node.stat.getCversion() + 1;

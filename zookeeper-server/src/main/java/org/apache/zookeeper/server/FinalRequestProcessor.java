@@ -85,6 +85,16 @@ import java.util.Locale;
  * This RequestProcessor counts on ZooKeeperServer to populate the
  * outstandingRequests member of ZooKeeperServer.
  */
+
+/**
+ *          // 返回结果
+ *          // 1、从outstandingChanges队列中获取Request
+ *          // 2、更新DataTree
+ *          // 3、触发watcher
+ *          // 4、构造Response
+ *          // 5、通过NIOServerCnxn中的sendResponse把Response转化成ByteBuffer返回客户端
+ *
+ */
 public class FinalRequestProcessor implements RequestProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(FinalRequestProcessor.class);
@@ -120,8 +130,7 @@ public class FinalRequestProcessor implements RequestProcessor {
                 TxnHeader hdr = request.getHdr();
                 Record txn = request.getTxn();
                 long zxid = hdr.getZxid();
-                while (!zks.outstandingChanges.isEmpty()
-                       && zks.outstandingChanges.peek().zxid <= zxid) {
+                while (!zks.outstandingChanges.isEmpty() && zks.outstandingChanges.peek().zxid <= zxid) {
                     ChangeRecord cr = zks.outstandingChanges.remove();
                     if (cr.zxid < zxid) {
                         LOG.warn("Zxid outstanding " + cr.zxid + " is less than current " + zxid);
