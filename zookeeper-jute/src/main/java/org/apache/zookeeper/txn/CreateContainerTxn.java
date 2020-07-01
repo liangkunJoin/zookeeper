@@ -29,16 +29,13 @@ public class CreateContainerTxn implements Record {
   private int parentCVersion;
   public CreateContainerTxn() {
   }
-  public CreateContainerTxn(
-        String path,
-        byte[] data,
-        java.util.List<org.apache.zookeeper.data.ACL> acl,
-        int parentCVersion) {
+  public CreateContainerTxn(String path, byte[] data, java.util.List<org.apache.zookeeper.data.ACL> acl, int parentCVersion) {
     this.path=path;
     this.data=data;
     this.acl=acl;
     this.parentCVersion=parentCVersion;
   }
+
   public String getPath() {
     return path;
   }

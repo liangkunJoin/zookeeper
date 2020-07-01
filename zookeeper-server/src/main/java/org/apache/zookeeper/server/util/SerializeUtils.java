@@ -124,17 +124,14 @@ public class SerializeUtils {
         return txn;
     }
 
-    public static void deserializeSnapshot(DataTree dt,InputArchive ia,
-            Map<Long, Integer> sessions) throws IOException {
+    public static void deserializeSnapshot(DataTree dt,InputArchive ia, Map<Long, Integer> sessions) throws IOException {
         int count = ia.readInt("count");
         while (count > 0) {
             long id = ia.readLong("id");
             int to = ia.readInt("timeout");
             sessions.put(id, to);
             if (LOG.isTraceEnabled()) {
-                ZooTrace.logTraceMessage(LOG, ZooTrace.SESSION_TRACE_MASK,
-                        "loadData --- session in archive: " + id
-                        + " with timeout: " + to);
+                ZooTrace.logTraceMessage(LOG, ZooTrace.SESSION_TRACE_MASK, "loadData --- session in archive: " + id + " with timeout: " + to);
             }
             count--;
         }

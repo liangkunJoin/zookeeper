@@ -40,11 +40,9 @@ import org.slf4j.LoggerFactory;
 class WatchManager {
     private static final Logger LOG = LoggerFactory.getLogger(WatchManager.class);
 
-    private final HashMap<String, HashSet<Watcher>> watchTable =
-        new HashMap<String, HashSet<Watcher>>();
+    private final HashMap<String, HashSet<Watcher>> watchTable = new HashMap<>();
 
-    private final HashMap<Watcher, HashSet<String>> watch2Paths =
-        new HashMap<Watcher, HashSet<String>>();
+    private final HashMap<Watcher, HashSet<String>> watch2Paths = new HashMap<>();
 
     synchronized int size(){
         int result = 0;
@@ -95,19 +93,19 @@ class WatchManager {
     }
 
     Set<Watcher> triggerWatch(String path, EventType type, Set<Watcher> supress) {
-        WatchedEvent e = new WatchedEvent(type,
-                KeeperState.SyncConnected, path);
+        WatchedEvent e = new WatchedEvent(type, KeeperState.SyncConnected, path);
         HashSet<Watcher> watchers;
+
         synchronized (this) {
+
             watchers = watchTable.remove(path);
             if (watchers == null || watchers.isEmpty()) {
                 if (LOG.isTraceEnabled()) {
-                    ZooTrace.logTraceMessage(LOG,
-                            ZooTrace.EVENT_DELIVERY_TRACE_MASK,
-                            "No watchers for " + path);
+                    ZooTrace.logTraceMessage(LOG, ZooTrace.EVENT_DELIVERY_TRACE_MASK, "No watchers for " + path);
                 }
                 return null;
             }
+
             for (Watcher w : watchers) {
                 HashSet<String> paths = watch2Paths.get(w);
                 if (paths != null) {
@@ -115,12 +113,14 @@ class WatchManager {
                 }
             }
         }
+
         for (Watcher w : watchers) {
             if (supress != null && supress.contains(w)) {
                 continue;
             }
             w.process(e);
         }
+
         return watchers;
     }
 
@@ -129,15 +129,16 @@ class WatchManager {
      */
     @Override
     public synchronized String toString() {
+
         StringBuilder sb = new StringBuilder();
 
-        sb.append(watch2Paths.size()).append(" connections watching ")
-            .append(watchTable.size()).append(" paths\n");
+        sb.append(watch2Paths.size()).append(" connections watching ").append(watchTable.size()).append(" paths\n");
 
         int total = 0;
         for (HashSet<String> paths : watch2Paths.values()) {
             total += paths.size();
         }
+
         sb.append("Total watches:").append(total);
 
         return sb.toString();

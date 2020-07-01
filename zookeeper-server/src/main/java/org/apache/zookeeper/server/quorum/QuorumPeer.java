@@ -741,16 +741,13 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
     public synchronized void setPeerState(ServerState newState){
         state=newState;
     }
-    public synchronized void reconfigFlagSet(){
-       reconfigFlag = true;
-    }
+    public synchronized void reconfigFlagSet(){ reconfigFlag = true; }
     public synchronized void reconfigFlagClear(){
        reconfigFlag = false;
     }
     public synchronized boolean isReconfigStateChange(){
        return reconfigFlag;
     }
-
     public synchronized ServerState getPeerState(){
         return state;
     }
@@ -973,6 +970,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         responder.running = false;
         responder.interrupt();
     }
+
     synchronized public void startLeaderElection() {
        try {
            // 生成投票投给自己
@@ -1030,10 +1028,8 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
      * It defaults to FileLogProvider persistence provider.
      */
     public QuorumPeer(Map<Long,QuorumServer> quorumPeers, File snapDir,
-            File logDir, int clientPort, int electionAlg,
-            long myid, int tickTime, int initLimit, int syncLimit,
-            QuorumVerifier quorumConfig)
-        throws IOException
+            File logDir, int clientPort, int electionAlg, long myid, int tickTime, int initLimit, int syncLimit,
+            QuorumVerifier quorumConfig) throws IOException
     {
         this(quorumPeers, snapDir, logDir, electionAlg,
                 myid,tickTime, initLimit,syncLimit, false,

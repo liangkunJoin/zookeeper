@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 
 
 public class FastLeaderElection implements Election {
+
     private static final Logger LOG = LoggerFactory.getLogger(FastLeaderElection.class);
 
     /**

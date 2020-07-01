@@ -53,8 +53,7 @@ public class ContainerManager {
      * @param maxPerMinute the max containers to delete per second - avoids
      *                     herding of container deletions
      */
-    public ContainerManager(ZKDatabase zkDb, RequestProcessor requestProcessor,
-                            int checkIntervalMs, int maxPerMinute) {
+    public ContainerManager(ZKDatabase zkDb, RequestProcessor requestProcessor, int checkIntervalMs, int maxPerMinute) {
         this.zkDb = zkDb;
         this.requestProcessor = requestProcessor;
         this.checkIntervalMs = checkIntervalMs;
@@ -104,8 +103,7 @@ public class ContainerManager {
     /**
      * Manually check the containers. Not normally used directly
      */
-    public void checkContainers()
-            throws InterruptedException {
+    public void checkContainers() throws InterruptedException {
         long minIntervalMs = getMinIntervalMs();
         for (String containerPath : getCandidates()) {
             long startMs = Time.currentElapsedTime();

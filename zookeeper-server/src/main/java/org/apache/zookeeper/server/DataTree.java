@@ -105,8 +105,7 @@ public class DataTree {
     private static final String quotaZookeeper = Quotas.quotaZookeeper;
 
     /** this will be the string thats stored as a child of /zookeeper */
-    private static final String quotaChildZookeeper = quotaZookeeper
-            .substring(procZookeeper.length() + 1);
+    private static final String quotaChildZookeeper = quotaZookeeper.substring(procZookeeper.length() + 1);
 
     /**
      * the zookeeper config node that acts as the config management node for
@@ -115,8 +114,7 @@ public class DataTree {
     private static final String configZookeeper = ZooDefs.CONFIG_NODE;
 
     /** this will be the string thats stored as a child of /zookeeper */
-    private static final String configChildZookeeper = configZookeeper
-            .substring(procZookeeper.length() + 1);
+    private static final String configChildZookeeper = configZookeeper.substring(procZookeeper.length() + 1);
 
     /**
      * the path trie that keeps track fo the quota nodes in this datatree
@@ -126,20 +124,17 @@ public class DataTree {
     /**
      * This hashtable lists the paths of the ephemeral nodes of a session.
      */
-    private final Map<Long, HashSet<String>> ephemerals =
-        new ConcurrentHashMap<Long, HashSet<String>>();
+    private final Map<Long, HashSet<String>> ephemerals = new ConcurrentHashMap<Long, HashSet<String>>();
 
     /**
      * This set contains the paths of all container nodes
      */
-    private final Set<String> containers =
-            Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+    private final Set<String> containers = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
     /**
      * This set contains the paths of all ttl nodes
      */
-    private final Set<String> ttls =
-            Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+    private final Set<String> ttls = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
     private final ReferenceCountedACLCache aclCache = new ReferenceCountedACLCache();
 
@@ -243,7 +238,8 @@ public class DataTree {
      */
     public void addConfigNode() {
         DataNode zookeeperZnode = nodes.get(procZookeeper);
-        if (zookeeperZnode != null) { // should always be the case
+        if (zookeeperZnode != null) {
+            // should always be the case
             zookeeperZnode.addChild(configChildZookeeper);
         } else {
             assert false : "There's no /zookeeper znode - this should never happen.";
@@ -434,8 +430,8 @@ public class DataTree {
      */
     public void createNode(final String path, byte data[], List<ACL> acl,
             long ephemeralOwner, int parentCVersion, long zxid, long time, Stat outputStat)
-            throws KeeperException.NoNodeException,
-            KeeperException.NodeExistsException {
+            throws KeeperException.NoNodeException, KeeperException.NodeExistsException {
+
         int lastSlash = path.lastIndexOf('/');
         String parentName = path.substring(0, lastSlash);
         String childName = path.substring(lastSlash + 1);
@@ -1135,8 +1131,7 @@ public class DataTree {
                 // ok this is the limit node
                 // get the real node and update
                 // the count and the bytes
-                String realPath = path.substring(Quotas.quotaZookeeper
-                        .length(), path.indexOf(endString));
+                String realPath = path.substring(Quotas.quotaZookeeper.length(), path.indexOf(endString));
                 updateQuotaForPath(realPath);
                 this.pTrie.addPath(realPath);
             }
@@ -1235,8 +1230,7 @@ public class DataTree {
                 String parentPath = path.substring(0, lastSlash);
                 DataNode parent = nodes.get(parentPath);
                 if (parent == null) {
-                    throw new IOException("Invalid Datatree, unable to find " +
-                            "parent " + parentPath + " of path " + path);
+                    throw new IOException("Invalid Datatree, unable to find " + "parent " + parentPath + " of path " + path);
                 }
                 parent.addChild(path.substring(lastSlash + 1));
                 long eowner = node.stat.getEphemeralOwner();

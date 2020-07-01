@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 /**
  *         // 数据持久化，create
  *         // 1、processRequest方法将Request添加到queuedRequests队列中
- *         // 2、负责从queuedRequests队列中获取Request
+ *         // 2、负责从queuedRequests队列中获取 Request
  *         // 3、负责将txn同步到磁盘，并且进行快照
  *         // 4、如果同步完成了就会调用nextProcessor.processRequest(si)
  *

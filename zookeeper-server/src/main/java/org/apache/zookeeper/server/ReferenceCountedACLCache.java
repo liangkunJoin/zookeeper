@@ -38,14 +38,12 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ReferenceCountedACLCache {
     private static final Logger LOG = LoggerFactory.getLogger(ReferenceCountedACLCache.class);
 
-    final Map<Long, List<ACL>> longKeyMap =
-            new HashMap<Long, List<ACL>>();
+    final Map<Long, List<ACL>> longKeyMap = new HashMap<Long, List<ACL>>();
 
-    final Map<List<ACL>, Long> aclKeyMap =
-            new HashMap<List<ACL>, Long>();
+    final Map<List<ACL>, Long> aclKeyMap = new HashMap<List<ACL>, Long>();
 
-    final Map<Long, AtomicLongWithEquals> referenceCounter =
-            new HashMap<Long, AtomicLongWithEquals>();
+    final Map<Long, AtomicLongWithEquals> referenceCounter = new HashMap<Long, AtomicLongWithEquals>();
+
     private static final long OPEN_UNSAFE_ACL_ID = -1L;
 
     /**

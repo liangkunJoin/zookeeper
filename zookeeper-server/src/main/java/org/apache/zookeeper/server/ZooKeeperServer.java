@@ -420,9 +420,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         long id = cnxn.getSessionId();
         int to = cnxn.getSessionTimeout();
         if (!sessionTracker.touchSession(id, to)) {
-            throw new MissingSessionException(
-                    "No session with sessionid 0x" + Long.toHexString(id)
-                    + " exists, probably expired and removed");
+            throw new MissingSessionException("No session with sessionid 0x" + Long.toHexString(id) + " exists, probably expired and removed");
         }
     }
 
@@ -1223,8 +1221,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         return processTxn(request, request.getHdr(), request.getTxn());
     }
 
-    private ProcessTxnResult processTxn(Request request, TxnHeader hdr,
-                                        Record txn) {
+    private ProcessTxnResult processTxn(Request request, TxnHeader hdr, Record txn) {
         ProcessTxnResult rc;
         int opCode = request != null ? request.type : hdr.getType();
         long sessionId = request != null ? request.sessionId : hdr.getClientId();

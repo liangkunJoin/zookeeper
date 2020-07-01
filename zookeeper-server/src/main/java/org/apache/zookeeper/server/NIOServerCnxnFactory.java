@@ -173,6 +173,9 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
      * connections per IP and attempts to cope with running out of file
      * descriptors by briefly sleeping before retrying.
      */
+    /**
+     * 获取连接，并且验证该连接是否可用，并且将可用的channel放入 acceptedQueue 队列中
+     */
     private class AcceptThread extends AbstractSelectThread {
         private final ServerSocketChannel acceptSocket;
         private final SelectionKey acceptKey;
@@ -181,8 +184,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         private Iterator<SelectorThread> selectorIterator;
         private volatile boolean reconfiguring = false;
         
-        public AcceptThread(ServerSocketChannel ss, InetSocketAddress addr,
-                Set<SelectorThread> selectorThreads) throws IOException {
+        public AcceptThread(ServerSocketChannel ss, InetSocketAddress addr, Set<SelectorThread> selectorThreads) throws IOException {
             super("NIOServerCxnFactory.AcceptThread:" + addr);
             this.acceptSocket = ss;
             this.acceptKey = acceptSocket.register(selector, SelectionKey.OP_ACCEPT);
@@ -324,6 +326,10 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
      * If there is no worker thread pool, the SelectorThread performs the I/O
      * directly.
      */
+    /**
+     * 获取 socketChannel 并且在 selector 注册 读的事件，将 NIOServerCnxn 注入到 selector的key中的 attachment中
+     * 并且将对应的 channel 数据 转化为 Request 并交给对应的 firstProcessor 处理数据
+     */
     class SelectorThread extends AbstractSelectThread {
         private final int id;
         private final Queue<SocketChannel> acceptedQueue;
@@ -332,6 +338,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         public SelectorThread(int id) throws IOException {
             super("NIOServerCxnFactory.SelectorThread-" + id);
             this.id = id;
+            // acceptTheard 获取可用的channel放入 acceptedQueue
             acceptedQueue = new LinkedBlockingQueue<SocketChannel>();
             updateQueue = new LinkedBlockingQueue<SelectionKey>();
         }
@@ -810,8 +817,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
             // of 1 entry --  we need to set the initial cap
             // to 2 to avoid rehash when the first entry is added
             // Construct a ConcurrentHashSet using a ConcurrentHashMap
-            set = Collections.newSetFromMap(
-                new ConcurrentHashMap<NIOServerCnxn, Boolean>(2));
+            set = Collections.newSetFromMap(new ConcurrentHashMap<NIOServerCnxn, Boolean>(2));
             // Put the new set in the map, but only if another thread
             // hasn't beaten us to it
             Set<NIOServerCnxn> existingSet = ipMap.putIfAbsent(addr, set);

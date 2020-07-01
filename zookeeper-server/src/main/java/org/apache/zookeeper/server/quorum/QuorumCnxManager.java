@@ -268,8 +268,7 @@ public class QuorumCnxManager {
         this.view = view;
         this.listenOnAllIPs = listenOnAllIPs;
 
-        initializeAuth(mySid, authServer, authLearner, quorumCnxnThreadsSize,
-                quorumSaslAuthEnabled);
+        initializeAuth(mySid, authServer, authLearner, quorumCnxnThreadsSize, quorumSaslAuthEnabled);
 
         // Starts listener thread that waits for connection requests
         listener = new Listener();
@@ -292,21 +291,18 @@ public class QuorumCnxManager {
         // init connection executors
         final AtomicInteger threadIndex = new AtomicInteger(1);
         SecurityManager s = System.getSecurityManager();
-        final ThreadGroup group = (s != null) ? s.getThreadGroup()
-                : Thread.currentThread().getThreadGroup();
+        final ThreadGroup group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
         ThreadFactory daemonThFactory = new ThreadFactory() {
 
             @Override
             public Thread newThread(Runnable r) {
-                Thread t = new Thread(group, r, "QuorumConnectionThread-"
-                        + "[myid=" + mySid + "]-"
-                        + threadIndex.getAndIncrement());
+                Thread t = new Thread(group, r, "QuorumConnectionThread-" + "[myid=" + mySid + "]-" + threadIndex.getAndIncrement());
                 return t;
             }
+
         };
-        this.connectionExecutor = new ThreadPoolExecutor(3,
-                quorumCnxnThreadsSize, 60, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>(), daemonThFactory);
+        this.connectionExecutor = new ThreadPoolExecutor(3, quorumCnxnThreadsSize, 60,
+                TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), daemonThFactory);
         this.connectionExecutor.allowCoreThreadTimeOut(true);
     }
 
@@ -1229,15 +1225,13 @@ public class QuorumCnxManager {
      * @param buffer
      *          Reference to the buffer to be inserted in the queue
      */
-    private void addToSendQueue(ArrayBlockingQueue<ByteBuffer> queue,
-          ByteBuffer buffer) {
+    private void addToSendQueue(ArrayBlockingQueue<ByteBuffer> queue, ByteBuffer buffer) {
         if (queue.remainingCapacity() == 0) {
             try {
                 queue.remove();
             } catch (NoSuchElementException ne) {
                 // element could be removed by poll()
-                LOG.debug("Trying to remove from an empty " +
-                        "Queue. Ignoring exception " + ne);
+                LOG.debug("Trying to remove from an empty " + "Queue. Ignoring exception " + ne);
             }
         }
         try {
@@ -1297,8 +1291,7 @@ public class QuorumCnxManager {
                     recvQueue.remove();
                 } catch (NoSuchElementException ne) {
                     // element could be removed by poll()
-                     LOG.debug("Trying to remove from an empty " +
-                         "recvQueue. Ignoring exception " + ne);
+                     LOG.debug("Trying to remove from an empty " + "recvQueue. Ignoring exception " + ne);
                 }
             }
             try {

@@ -45,11 +45,9 @@ import org.slf4j.LoggerFactory;
  * useful even with a single thread.
  */
 public class WorkerService {
-    private static final Logger LOG =
-        LoggerFactory.getLogger(WorkerService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerService.class);
 
-    private final ArrayList<ExecutorService> workers =
-        new ArrayList<ExecutorService>();
+    private final ArrayList<ExecutorService> workers = new ArrayList<ExecutorService>();
 
     private final String threadNamePrefix;
     private int numWorkerThreads;
@@ -66,8 +64,7 @@ public class WorkerService {
      * @param useAssignableThreads  whether the worker threads should be
      *                              individually assignable or not
      */
-    public WorkerService(String name, int numThreads,
-                         boolean useAssignableThreads) {
+    public WorkerService(String name, int numThreads, boolean useAssignableThreads) {
         this.threadNamePrefix = (name == null ? "" : name) + "Thread";
         this.numWorkerThreads = numThreads;
         this.threadsAreAssignable = useAssignableThreads;
@@ -199,12 +196,10 @@ public class WorkerService {
         if (numWorkerThreads > 0) {
             if (threadsAreAssignable) {
                 for(int i = 1; i <= numWorkerThreads; ++i) {
-                    workers.add(Executors.newFixedThreadPool(
-                        1, new DaemonThreadFactory(threadNamePrefix, i)));
+                    workers.add(Executors.newFixedThreadPool(1, new DaemonThreadFactory(threadNamePrefix, i)));
                 }
             } else {
-                workers.add(Executors.newFixedThreadPool(
-                    numWorkerThreads, new DaemonThreadFactory(threadNamePrefix)));
+                workers.add(Executors.newFixedThreadPool(numWorkerThreads, new DaemonThreadFactory(threadNamePrefix)));
             }
         }
         stopped = false;

@@ -203,11 +203,13 @@ public class FileTxnLog implements TxnLog {
         if (hdr == null) {
             return false;
         }
+
         if (hdr.getZxid() <= lastZxidSeen) {
             LOG.warn("Current zxid " + hdr.getZxid() + " is <= " + lastZxidSeen + " for " + hdr.getType());
         } else {
             lastZxidSeen = hdr.getZxid();
         }
+
         if (logStream==null) {
            if(LOG.isInfoEnabled()){
                 LOG.info("Creating new log file: " + Util.makeLogName(hdr.getZxid()));
@@ -227,8 +229,7 @@ public class FileTxnLog implements TxnLog {
         filePadding.padFile(fos.getChannel());
         byte[] buf = Util.marshallTxnEntry(hdr, txn);
         if (buf == null || buf.length == 0) {
-            throw new IOException("Faulty serialization for header " +
-                    "and txn");
+            throw new IOException("Faulty serialization for header and txn");
         }
         Checksum crc = makeChecksumAlgorithm();
         crc.update(buf, 0, buf.length);

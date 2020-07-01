@@ -318,6 +318,11 @@ public class NIOServerCnxn extends ServerCnxn {
                     throw new EndOfStreamException(
                             "Unable to read additional data from client sessionid 0x" + Long.toHexString(sessionId) + ", likely client has closed socket");
                 }
+                // ByteBuffer.allocate(10) 分配10个字节
+                // capacity表示容量的大小，为初始化是传入的值的大小，之后便不会变化。
+                // positon指向即将要操作的位置。
+                // 在写状态下limit表示可写的空间的大小。
+                // remaining表示剩余可写空间的大小。
                 if (incomingBuffer.remaining() == 0) {
                     boolean isPayload;
                     if (incomingBuffer == lenBuffer) { // start of next request
@@ -328,7 +333,7 @@ public class NIOServerCnxn extends ServerCnxn {
                         // continuation
                         isPayload = true;
                     }
-                    if (isPayload) { // not the case for 4letterword
+                    if (isPayload) { // not the case for 4 letter word
                         readPayload();
                     }
                     else {

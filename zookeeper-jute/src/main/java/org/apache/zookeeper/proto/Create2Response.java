@@ -27,9 +27,7 @@ public class Create2Response implements Record {
   private org.apache.zookeeper.data.Stat stat;
   public Create2Response() {
   }
-  public Create2Response(
-        String path,
-        org.apache.zookeeper.data.Stat stat) {
+  public Create2Response(String path, org.apache.zookeeper.data.Stat stat) {
     this.path=path;
     this.stat=stat;
   }

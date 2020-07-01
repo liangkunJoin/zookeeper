@@ -280,7 +280,8 @@ public class ZooKeeper implements AutoCloseable {
             }
         }
 
-        public Map<EventType, Set<Watcher>> removeWatcher(String clientPath, Watcher watcher, WatcherType watcherType, boolean local, int rc) throws KeeperException {
+        public Map<EventType, Set<Watcher>> removeWatcher(String clientPath, Watcher watcher,
+                                                          WatcherType watcherType, boolean local, int rc) throws KeeperException {
             // Validate the provided znode path contains the given watcher of
             // watcherType
             containsWatcher(clientPath, watcher, watcherType);
@@ -332,6 +333,8 @@ public class ZooKeeper implements AutoCloseable {
             }
             return removedWatchers;
         }
+
+
 
         private boolean contains(String path, Watcher watcherObj, Map<String, Set<Watcher>> pathVsWatchers) {
             boolean watcherExists = true;
@@ -405,7 +408,8 @@ public class ZooKeeper implements AutoCloseable {
             }
         }
 
-        protected boolean removeWatches(Map<String, Set<Watcher>> pathVsWatcher, Watcher watcher, String path, boolean local, int rc, Set<Watcher> removedWatchers) throws KeeperException {
+        protected boolean removeWatches(Map<String, Set<Watcher>> pathVsWatcher, Watcher watcher,
+                                        String path, boolean local, int rc, Set<Watcher> removedWatchers) throws KeeperException {
             if (!local && rc != Code.OK.intValue()) {
                 throw KeeperException
                         .create(KeeperException.Code.get(rc), path);
@@ -596,6 +600,7 @@ public class ZooKeeper implements AutoCloseable {
     }
 
     class ChildWatchRegistration extends WatchRegistration {
+
         public ChildWatchRegistration(Watcher watcher, String clientPath) {
             super(watcher, clientPath);
         }
